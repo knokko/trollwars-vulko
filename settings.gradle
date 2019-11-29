@@ -1,0 +1,3 @@
+rootProject.name = 'troll-wars'
+include 'vulko-util', 'vulko-memory', 'vulko-models', 'vulko-textures', 'vulko-core', 'trollwars-textures', 
+        'trollwars-models', 'model-viewer'
