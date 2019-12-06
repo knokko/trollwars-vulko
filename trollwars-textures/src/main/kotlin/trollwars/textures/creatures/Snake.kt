@@ -114,7 +114,7 @@ fun snakePatternToTailTexture(texture: TextureBuilder, props: SnakeTextureProper
         }
 
         texture.fillRect(props.colorPattern.getPixel(patternX.toLong(), props.colorPattern.height - 1L),
-            textureX.toLong(), texture.height / 2L, props.scaleLength, texture.height / 2)
+            textureX.toLong(), texture.height / 2L, props.scaleLength.toLong(), texture.height.toLong() / 2L)
     }
     return texture
 }
