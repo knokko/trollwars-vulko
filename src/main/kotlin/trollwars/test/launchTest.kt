@@ -1,16 +1,13 @@
 package trollwars.test
 
-import vulko.instance.InstanceBuilder
 import org.lwjgl.glfw.GLFW
 import vulko.util.Version
 import vulko.window.WindowBuilder
 
 fun main(){
-    val windowBuilder = WindowBuilder(title="Hello Vulko", width=1000, height=500)
-    val window = windowBuilder.build()
+    val window = WindowBuilder(title="Hello Vulko", width=1000, height=500).build()
+    val instance = window.createInstance(debug = true, appName = "VulkoTester", appVersion = Version(1, 0, 0))
 
-    val instanceBuilder = InstanceBuilder(true, "VulkoTester", Version(1, 0, 0))
-    val instance = window.createInstance(instanceBuilder)
     val bestPhysicalDevice = instance.choosePhysicalDevice()
     println("best device is $bestPhysicalDevice")
     val device = bestPhysicalDevice!!.createLogicalDevice()

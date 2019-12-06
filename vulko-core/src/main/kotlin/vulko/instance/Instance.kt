@@ -11,6 +11,7 @@ import org.lwjgl.vulkan.VK10.*
 
 import vulko.util.assertSuccess
 import vulko.window.VulkoWindow
+import java.lang.IllegalArgumentException
 
 /**
  * Represents the Vulko/Vulkan instance. This class has the *vulkanInstance* property, which is the actual Vulkan
@@ -169,4 +170,36 @@ val DEFAULT_DEVICE_RATER = {device: VulkoPhysicalDevice ->
             }
         }
     }
+}
+
+/**
+ * The default debug callback.
+ * It will simply print every message along with the message severity and message type.
+ */
+val DEFAULT_DEBUG_CALLBACK = {messageSeverity: Int, messageTypes: Int, pCallbackData: Long, _: Long ->
+    val severityString = when(messageSeverity) {
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_VERBOSE_BIT_EXT -> "Verbose"
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_INFO_BIT_EXT -> "Info"
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_WARNING_BIT_EXT -> "Warning"
+        VK_DEBUG_UTILS_MESSAGE_SEVERITY_ERROR_BIT_EXT -> "Error"
+        else -> throw IllegalArgumentException("Unknown messageSeverity: $messageSeverity")
+    }
+
+    var messageTypeString = ""
+    if (messageTypes and VK_DEBUG_UTILS_MESSAGE_TYPE_GENERAL_BIT_EXT != 0){
+        messageTypeString += "General"
+    }
+    if (messageTypes and VK_DEBUG_UTILS_MESSAGE_TYPE_VALIDATION_BIT_EXT != 0){
+        messageTypeString += "Validation"
+    }
+    if (messageTypes and VK_DEBUG_UTILS_MESSAGE_TYPE_PERFORMANCE_BIT_EXT != 0){
+        messageTypeString += "Performance"
+    }
+
+    val callbackData = VkDebugUtilsMessengerCallbackDataEXT.create(pCallbackData)
+    val message = callbackData.pMessageString()
+    val messageID = callbackData.messageIdNumber()
+
+    println("[$severityString][$messageTypeString]: $message ($messageID)")
+    VK_FALSE
 }
