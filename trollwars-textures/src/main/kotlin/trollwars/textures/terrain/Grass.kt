@@ -14,7 +14,7 @@ fun drawGrass(stack: VirtualStack, texture: TextureBuilder, baseColor: Int, brig
               scale: Int = 1, rand: Random = Random()){
 
     val startTime = System.currentTimeMillis()
-    texture.fillRect(backgroundColor, minX.toLong(), minY.toLong(), drawWidth, drawHeight)
+    texture.fillRect(backgroundColor, minX.toLong(), minY.toLong(), drawWidth.toLong(), drawHeight.toLong())
 
     val maxX = minX + drawWidth - 1
     val maxY = minY + drawHeight - 1

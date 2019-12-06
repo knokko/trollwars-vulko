@@ -36,6 +36,8 @@ class VulkoLogicalDevice(
      */
     val physicalDevice: VulkoPhysicalDevice) {
 
+    private var destroyed = false
+
     /**
      * The list containing all swapchains created by the createSwapchain() method of this device that are not (yet)
      * destroyed.
@@ -192,11 +194,21 @@ class VulkoLogicalDevice(
         }
     }
 
-    internal fun destroy(){
-        for (swapchain in swapchains){
-            swapchain.destroy()
+    fun isDestroyed() : Boolean {
+        return destroyed
+    }
+
+    /**
+     * Destroys this VulkoLogicalDevice along with its swapchains if it has not yet been destroyed.
+     */
+    fun destroy(){
+        if (!destroyed) {
+            destroyed = true
+            for (swapchain in swapchains) {
+                swapchain.destroy()
+            }
+            vkDestroyDevice(vulkanDevice, null)
         }
-        vkDestroyDevice(vulkanDevice, null)
     }
 }
 

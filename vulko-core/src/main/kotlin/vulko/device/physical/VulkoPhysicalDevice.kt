@@ -27,6 +27,8 @@ import java.util.*
  */
 class VulkoPhysicalDevice internal constructor(val vulkanDevice: VkPhysicalDevice, val instance: VulkoInstance){
 
+    private var destroyed = false
+
     private var gotExtensionProperties = false
     /**
      * Provides lazy access to the VkExtensionProperties array/Buffer of this physical device
@@ -305,27 +307,33 @@ class VulkoPhysicalDevice internal constructor(val vulkanDevice: VkPhysicalDevic
         }
     }
 
-    internal fun destroy(){
-        for (logDevice in logicalDevices){
-            logDevice.destroy()
-        }
-        if (gotSurfaceFormats){
-            surfaceFormats.free()
-        }
-        if (gotSurfacePresentModes){
-            memFree(surfacePresentModes)
-        }
-        if (gotSurfaceCapabilities){
-            surfaceCapabilities.free()
-        }
-        if (gotProperties){
-            properties.free()
-        }
-        if (gotExtensionProperties){
-            extensionProperties.free()
-        }
-        if (gotFeatures){
-            features.free()
+    /**
+     * Destroys this VulkoPhysicalDevice along with its logical devices if it has not yet been destroyed.
+     */
+    fun destroy(){
+        if (!destroyed) {
+            destroyed = true
+            for (logDevice in logicalDevices) {
+                logDevice.destroy()
+            }
+            if (gotSurfaceFormats) {
+                surfaceFormats.free()
+            }
+            if (gotSurfacePresentModes) {
+                memFree(surfacePresentModes)
+            }
+            if (gotSurfaceCapabilities) {
+                surfaceCapabilities.free()
+            }
+            if (gotProperties) {
+                properties.free()
+            }
+            if (gotExtensionProperties) {
+                extensionProperties.free()
+            }
+            if (gotFeatures) {
+                features.free()
+            }
         }
     }
 }

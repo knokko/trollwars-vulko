@@ -1,6 +1,5 @@
 package trollwars.test
 
-import org.lwjgl.glfw.GLFW
 import vulko.util.Version
 import vulko.window.WindowBuilder
 
@@ -26,8 +25,8 @@ fun main(){
     }
     window.addResizeListener(resizeListener)
 
-    while (!GLFW.glfwWindowShouldClose(window.handle)){
-        GLFW.glfwPollEvents()
+    while (!window.shouldClose()){
+        window.poll()
         Thread.sleep(100)
     }
 

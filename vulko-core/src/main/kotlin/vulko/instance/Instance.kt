@@ -44,6 +44,8 @@ class VulkoInstance internal constructor(
      */
     val debugMessenger: Long?){
 
+    private var destroyed = false
+
     /**
      * The handle of the window surface.
      * It will be initialized automatically upon creation of this Instance.
@@ -100,19 +102,33 @@ class VulkoInstance internal constructor(
         return bestDevice
     }
 
-    internal fun destroy(){
+    /**
+     * Checks if this VulkoInstance has already been destroyed
+     */
+    fun isDestroyed() : Boolean {
+        return destroyed
+    }
 
-        for (device in physicalDevices){
-            device.destroy()
+    /**
+     * Destroys this VulkoInstance along with its physical devices, surface and debug messenger if it has not yet been
+     * destroyed.
+     */
+    fun destroy(){
+
+        if (!destroyed) {
+            destroyed = true
+            for (device in physicalDevices) {
+                device.destroy()
+            }
+
+            vkDestroySurfaceKHR(vulkanInstance, surfaceHandle, null)
+
+            if (debugMessenger != null) {
+                vkDestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, null)
+            }
+
+            vkDestroyInstance(vulkanInstance, null)
         }
-
-        vkDestroySurfaceKHR(vulkanInstance, surfaceHandle, null)
-
-        if (debugMessenger != null){
-            vkDestroyDebugUtilsMessengerEXT(vulkanInstance, debugMessenger, null)
-        }
-
-        vkDestroyInstance(vulkanInstance, null)
     }
 }
 

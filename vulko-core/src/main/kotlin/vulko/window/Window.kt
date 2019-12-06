@@ -223,6 +223,20 @@ class VulkoWindow internal constructor(
     }
 
     /**
+     * Calls glfwWindowShouldClose and returns the result
+     */
+    fun shouldClose() : Boolean {
+        return glfwWindowShouldClose(handle)
+    }
+
+    /**
+     * Calls glfwPollEvents
+     */
+    fun poll() {
+        glfwPollEvents()
+    }
+
+    /**
      * Destroys the window and cleans most Vulko resources up. This will destroy all Vulko resources that do not
      * indicate otherwise.
      *

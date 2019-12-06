@@ -1,6 +1,7 @@
 package vulko.swapchain
 
 import org.lwjgl.system.MemoryUtil.memFree
+import org.lwjgl.vulkan.KHRSwapchain.vkDestroySwapchainKHR
 import org.lwjgl.vulkan.VkSurfaceFormatKHR
 import vulko.device.logical.VulkoLogicalDevice
 import java.nio.LongBuffer
@@ -16,18 +17,14 @@ class VulkoSwapchain internal constructor(private val device: VulkoLogicalDevice
         return "Swapchain(handle: $handle, image size: ($imageWidth, $imageHeight), present mode: $presentMode, $surfaceFormat)"
     }
 
-    fun isDestroyed() : Boolean {
-        return destroyed
-    }
-
     fun destroy(){
-        if (destroyed){
-            throw IllegalStateException("This swapchain is already destroyed")
-        }
-        destroyed = true
-        device.swapchains.remove(this)
-        memFree(images)
+        if (!destroyed) {
+            destroyed = true
+            device.swapchains.remove(this)
+            memFree(images)
 
-        // TODO Destroy the swapchain
+            // TODO Destroy the swapchain
+            vkDestroySwapchainKHR(device.vulkanDevice, handle, null)
+        }
     }
 }
