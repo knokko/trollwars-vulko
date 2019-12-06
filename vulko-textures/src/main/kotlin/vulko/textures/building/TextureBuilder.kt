@@ -15,29 +15,49 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         return red + (green shl 8) + (blue shl 16) + (alpha shl 24)
     }
 
+    @Throws(IllegalArgumentException::class)
     fun addressFor(x: Long, y: Long) : Long {
-        val result = address + 4 * (x + y * width)
-        if (result >= boundAddress){
+        if (x < 0 || y < 0 || x >= width || y >= height) {
             throw IllegalArgumentException("The given coordinates are ($x, $y), but the size of this texture is ($width, $height)")
         }
-        return result
+        return address + 4 * (x + y * width)
     }
 
-    fun fillRect(rgba: Int, minX: Long, minY: Long, width: Int, height: Int){
+    @Throws(IllegalArgumentException::class)
+    fun fillRect(rgba: Int, minX: Long, minY: Long, width: Long, height: Long){
+        if (width <= 0 || height <= 0) {
+            throw IllegalArgumentException("Width and height must be positive, but are ($width, $height)")
+        }
+        if (minX + width < minX) {
+            throw IllegalArgumentException("Adding width ($width) to minX ($minX) would cause overflow")
+        }
+        if (minY + height < minY) {
+            throw IllegalArgumentException("Adding height ($height) to minY ($minY) would cause overflow")
+        }
         if (minX < 0 || minY < 0 || minX + width > this.width || minY + height > this.height){
             throw IllegalArgumentException("Own size is (${this.width},${this.height}) and params are ($minX,$minY,$width,$height)")
         }
         val boundY = minY + height
-        for (currentY in minY until boundY){
-            var fillAddress = addressFor(minX, currentY)
-            for (counterX in 0 until width){
-                UNSAFE.putInt(fillAddress, rgba)
-                fillAddress += 4
-            }
+        val startAddress = addressFor(minX, minY)
+
+        // Fill the first row
+        var fillAddress = startAddress
+        for (counterX in 0 until width){
+            UNSAFE.putInt(fillAddress, rgba)
+            fillAddress += 4
+        }
+
+        // Copy the first row to the remaining rows
+        val rowLength = 4L * this.width
+        val fillLength = 4L * width
+        fillAddress = startAddress
+        for (currentY in minY + 1 until boundY) {
+            fillAddress += rowLength
+            UNSAFE.copyMemory(startAddress, fillAddress, fillLength)
         }
     }
 
-    fun fillRect(red: Int, green: Int, blue: Int, alpha: Int = 255, minX: Long, minY: Long, width: Int, height: Int){
+    fun fillRect(red: Int, green: Int, blue: Int, alpha: Int = 255, minX: Long, minY: Long, width: Long, height: Long){
         fillRect(rgbaFor(red, green, blue, alpha), minX, minY, width, height)
     }
 
@@ -77,10 +97,12 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
      * Assigns the given rgba value to the pixel at the given coordinates. This method is meant to be very fast and it
      * will NOT do any blending if the previous color happened to be partially transparent.
      */
+    @Throws(IllegalArgumentException::class)
     fun setPixel(x: Long, y: Long, rgba: Int){
         UNSAFE.putInt(addressFor(x, y), rgba)
     }
 
+    @Throws(IllegalArgumentException::class)
     fun setPixel(x: Long, y: Long, red: Int, green: Int, blue: Int, alpha: Int = 255){
         setPixel(x, y, rgbaFor(red, green, blue, alpha))
     }
@@ -91,6 +113,7 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
      * Gets the current rgba value of the pixel at the given coordinates. Use the getRed, getGreen, getBlue or getAlpha
      * method to extract the components from the value.
      */
+    @Throws(IllegalArgumentException::class)
     fun getPixel(x: Long, y: Long) : Int {
         return UNSAFE.getInt(addressFor(x, y))
     }
