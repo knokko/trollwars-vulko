@@ -1,10 +1,10 @@
-package vulko.test.textures.building
+package vulko.test.textures
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
 import vulko.memory.util.UNSAFE
-import vulko.textures.building.TextureBuilder
+import vulko.textures.TextureBuilder
 import kotlin.IllegalArgumentException
 
 class TestTextureBuilder {

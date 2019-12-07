@@ -1,7 +1,7 @@
 package trollwars.textures.creatures
 
 import vulko.memory.VirtualStack
-import vulko.textures.building.TextureBuilder
+import vulko.textures.TextureBuilder
 import vulko.util.math.ceilDiv
 import java.util.*
 

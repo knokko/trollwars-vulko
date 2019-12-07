@@ -1,4 +1,4 @@
-package vulko.textures.building
+package vulko.textures
 
 import vulko.memory.util.UNSAFE
 import java.awt.Color

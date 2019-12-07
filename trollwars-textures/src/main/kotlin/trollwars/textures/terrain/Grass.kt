@@ -2,7 +2,7 @@ package trollwars.textures.terrain
 
 import vulko.memory.VirtualStack
 import vulko.memory.util.UNSAFE
-import vulko.textures.building.TextureBuilder
+import vulko.textures.TextureBuilder
 import java.lang.StrictMath.*
 import java.util.Random
 

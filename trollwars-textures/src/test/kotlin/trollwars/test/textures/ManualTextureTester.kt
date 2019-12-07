@@ -4,7 +4,7 @@ import trollwars.textures.creatures.createSnake1Properties
 import trollwars.textures.terrain.drawGrass
 import trollwars.textures.creatures.snakePatternToTailTexture
 import vulko.memory.MemoryManager
-import vulko.textures.building.TextureBuilder
+import vulko.textures.TextureBuilder
 import java.util.*
 
 const val factor = 3

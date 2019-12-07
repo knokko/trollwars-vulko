@@ -4,7 +4,7 @@ import vulko.memory.MemoryChunk
 import vulko.memory.MemoryManager
 import vulko.memory.VirtualStack
 import vulko.models.buffer.BasicModelBuffer
-import vulko.textures.building.TextureBuilder
+import vulko.textures.TextureBuilder
 import vulko.util.math.isPowerOf2
 import vulko.util.math.nextPowerOf2
 import java.lang.StrictMath.*
