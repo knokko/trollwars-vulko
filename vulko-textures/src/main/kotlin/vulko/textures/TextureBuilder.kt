@@ -61,11 +61,14 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         fillRect(rgbaFor(red, green, blue, alpha), minX, minY, width, height)
     }
 
-    fun fillHorizontalLine(rgba: Int, minX: Int, y: Int, length: Int){
-        if (y < 0 || y >= height || minX < 0 || minX + length > width){
+    fun fillHorizontalLine(rgba: Int, minX: Long, y: Long, length: Long){
+        if (y < 0 || y >= height || minX < 0 || minX + length > width || length <= 0){
             throw IllegalArgumentException("Own size is ($width,$height) and params are ($minX,$y,$length)")
         }
-        var address = addressFor(minX.toLong(), y.toLong())
+        if (minX + length < minX) {
+            throw IllegalArgumentException("Adding length ($length) to minX ($minX) would cause overflow")
+        }
+        var address = addressFor(minX, y)
         for (counter in 0 until length){
             UNSAFE.putInt(address, rgba)
             address += 4

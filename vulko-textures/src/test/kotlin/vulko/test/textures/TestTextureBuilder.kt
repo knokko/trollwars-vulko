@@ -241,5 +241,60 @@ class TestTextureBuilder {
         }
     }
 
-    // TODO Test horizontalLine, verticalLine, copy, compress and BufferedImage operations
+    private fun testHorizontalLine(tb: TextureBuilder, rgba: Int, lineY: Long, minX: Long, maxX: Long){
+
+        // First ensure that no single pixel already has the rgba for the line to draw
+        for (x in 0 until tb.width.toLong()) {
+            for (y in 0 until tb.height.toLong()) {
+                assertNotEquals(rgba, tb.getPixel(x, y))
+            }
+        }
+
+        tb.fillHorizontalLine(rgba, minX, lineY, maxX - minX + 1)
+
+        // Ensure that exactly the pixels on the line changed to the rgba
+        for (x in 0 until tb.width.toLong()) {
+            for (y in 0 until tb.height.toLong()) {
+                if (y == lineY && x in minX..maxX) {
+                    assertEquals(rgba, tb.getPixel(x, y))
+                } else {
+                    assertNotEquals(rgba, tb.getPixel(x, y))
+                }
+            }
+        }
+    }
+
+    private fun testBadHorizontalLine(tb: TextureBuilder, lineY: Long, minX: Long, maxX: Long){
+        try {
+            tb.fillHorizontalLine(0, minX, lineY, maxX - minX + 1)
+            throw AssertionError("fillHorizontalLine($minX, $lineY, ${maxX - minX + 1}) should have thrown IllegalArgumentException")
+        } catch (ex: IllegalArgumentException){}
+    }
+
+    @Test
+    fun testHorizontalLine(){
+        withTexture(16, 9){
+            it.clearColor(0)
+
+            // Good edge cases
+            testHorizontalLine(it, 1, 0, 0, 15)
+            testHorizontalLine(it, 2, 8, 0, 15)
+            testHorizontalLine(it, 3, 0, 2, 6)
+            testHorizontalLine(it, 4, 4, 0, 15)
+
+            // Good normal cases
+            testHorizontalLine(it, 5, 7, 2, 4)
+            testHorizontalLine(it, 6, 2, 4, 10)
+
+            // Bad edge cases
+            testBadHorizontalLine(it, -1, 2, 5)
+            testBadHorizontalLine(it, 9, 3, 10)
+            testBadHorizontalLine(it, 2, -1, 8)
+            testBadHorizontalLine(it, 3, 2, 16)
+            testBadHorizontalLine(it, 5, 3, 2)
+            testBadHorizontalLine(it, 7, 7, Long.MAX_VALUE)
+        }
+    }
+
+    // TODO Test verticalLine, copy, compress and BufferedImage operations
 }
