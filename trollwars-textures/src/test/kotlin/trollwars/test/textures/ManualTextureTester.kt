@@ -1,4 +1,4 @@
-package test.textures
+package trollwars.test.textures
 
 import trollwars.textures.creatures.createSnake1Properties
 import trollwars.textures.terrain.drawGrass
@@ -30,41 +30,22 @@ fun main(){
     MemoryManager(6 * (width * height + smallWidth * smallHeight)).use{manager ->
         manager.claimStack(6 * (width * height + smallWidth * smallHeight), "small texture test").use {stack ->
             val textureAddress = stack.push(4 * width * height)
-            val tb = TextureBuilder(textureAddress, width.toInt(), height.toInt())
+            val tb = TextureBuilder(textureAddress, width, height)
 
-            checkColor(tb, 10, 20, 30, 40)
-            checkColor(tb, 210, 220, 230, 240)
-
-            tb.setPixel(11, 11, tb.rgbaFor(100, 10, 20, 255))
-            if (tb.getRed(tb.getPixel(11, 11)) != 100) throw Error("Red at (11,11) is ${tb.getRed(tb.getPixel(11, 11))}")
-            tb.saveAsImage("test texture")
-
+            val startTime = System.currentTimeMillis()
             drawGrass(
                 stack, tb, tb.rgbaFor(0, 10, 40), tb.rgbaFor(200, 255, 150),
                 tb.rgbaFor(30, 13, 0), scale = factor, rand = Random(10)
             )
 
             val smallAddress = stack.push(4 * smallWidth * smallHeight)
-            val smallTexture = TextureBuilder(smallAddress, smallWidth.toInt(), smallHeight.toInt())
+            val smallTexture = TextureBuilder(smallAddress, smallWidth, smallHeight)
 
-            val startTime = System.currentTimeMillis()
             tb.compress(factor, smallTexture)
             val endTime = System.currentTimeMillis()
-            println("Compressing took ${endTime - startTime} ms")
+            println("Took ${endTime - startTime} ms")
 
             smallTexture.saveAsImage("grass")
-
-            /*
-            val smallAddress = stack.push(4 * smallWidth * smallHeight)
-            val small = TextureBuilder(smallAddress, smallWidth.toInt(), smallHeight.toInt())
-            drawGrass(
-                stack, small, small.rgbaFor(40, 10, 0), small.rgbaFor(255, 150, 150),
-                small.rgbaFor(30, 13, 0)
-            )
-            small.copyTo(tb, 40, 50)
-            tb.saveAsImage("mixed grass")
-
-            small.saveAsImage("small grass")*/
         }
     }
 }
