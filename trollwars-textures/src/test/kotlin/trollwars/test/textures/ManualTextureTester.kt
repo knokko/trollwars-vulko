@@ -41,9 +41,10 @@ fun main(){
             val smallAddress = stack.push(4 * smallWidth * smallHeight)
             val smallTexture = TextureBuilder(smallAddress, smallWidth, smallHeight)
 
-            tb.compress(factor, smallTexture)
+
             val endTime = System.currentTimeMillis()
             println("Took ${endTime - startTime} ms")
+            tb.compress(factor, smallTexture)
 
             smallTexture.saveAsImage("grass")
         }
