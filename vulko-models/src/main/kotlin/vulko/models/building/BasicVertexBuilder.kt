@@ -42,7 +42,7 @@ class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: 
     /**
      * After a call to this method, this BasicVertexBuilder mustn't be used anymore!
      */
-    fun build(textureList: List<TextureEntry>, textureWidth: Int, textureHeight: Int) : BasicVertexBuffer {
+    fun build(textureList: List<TextureEntry>, textureWidth: Long, textureHeight: Long) : BasicVertexBuffer {
         checkBounds()
 
         val floatWidth = textureWidth.toFloat()

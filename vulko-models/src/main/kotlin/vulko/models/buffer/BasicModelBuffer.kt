@@ -4,7 +4,7 @@ import org.lwjgl.system.MemoryUtil.memByteBuffer
 import java.nio.ByteBuffer
 
 class BasicModelBuffer(val vertexDataAddress: Long, val indexDataAddress: Long, val textureAddress: Long,
-                       val vertexCount: Int, val indexCount: Int, val textureWidth: Int, val textureHeight: Int) {
+                       val vertexCount: Int, val indexCount: Int, val textureWidth: Long, val textureHeight: Long) {
 
     fun createBackingVertexBuffer() : ByteBuffer {
         return memByteBuffer(vertexDataAddress, vertexCount * BYTES_PER_VERTEX)
@@ -15,6 +15,6 @@ class BasicModelBuffer(val vertexDataAddress: Long, val indexDataAddress: Long, 
     }
 
     fun createBackingTextureBuffer() : ByteBuffer {
-        return memByteBuffer(textureAddress, 4 * textureWidth * textureHeight)
+        return memByteBuffer(textureAddress, 4 * textureWidth.toInt() * textureHeight.toInt())
     }
 }

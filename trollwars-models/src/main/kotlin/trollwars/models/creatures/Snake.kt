@@ -56,8 +56,8 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
                             StrictMath.sin(angle).toFloat(),
                             0f,
                             textureID,
-                            length * textureWidth / modelProps.tailParts,
-                            angleI * textureHeight / modelProps.verticesPerRing,
+                                (length * textureWidth / modelProps.tailParts).toInt(),
+                                (angleI * textureHeight / modelProps.verticesPerRing).toInt(),
                             tailMatrices[length]
                         )
                     }

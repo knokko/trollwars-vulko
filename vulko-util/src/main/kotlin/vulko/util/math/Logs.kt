@@ -1,6 +1,7 @@
 package vulko.util.math
 
 private const val POWER_30 = 1 shl 30
+private const val POWER_62 = 1 shl 62
 
 /**
  * Checks if the given number is a positive power of 2.
@@ -9,6 +10,10 @@ private const val POWER_30 = 1 shl 30
  */
 fun isPowerOf2(number: Int) : Boolean {
     return number >= 0 && Integer.bitCount(number) == 1
+}
+
+fun isPowerOf2(number: Long) : Boolean {
+    return number >= 0 && java.lang.Long.bitCount(number) == 1
 }
 
 /**
@@ -21,4 +26,12 @@ fun nextPowerOf2(number: Int) : Int {
     }
     val power = 32 - Integer.numberOfLeadingZeros(number - 1)
     return 1 shl power
+}
+
+fun nextPowerOf2(number: Long) : Long {
+    if (number < 0 || number > POWER_62){
+        throw IllegalArgumentException("Number must be between 0 and 2^62, but is $number")
+    }
+    val power = 64 - java.lang.Long.numberOfLeadingZeros(number - 1L)
+    return 1L shl power
 }

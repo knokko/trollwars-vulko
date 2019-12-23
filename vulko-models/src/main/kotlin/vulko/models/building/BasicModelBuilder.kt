@@ -26,7 +26,7 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
         manager.claimStack(textureCapacity.toLong(), "texture for $name")
     )
 
-    fun claimTextureSpace(width: Int, height: Int) : TextureEntry {
+    fun claimTextureSpace(width: Long, height: Long) : TextureEntry {
         val capacity = width.toLong() * height.toLong() * 4L
         val textureAddress = textureStack.push(capacity)
         val newTexture = TextureBuilder(textureAddress, width, height)
@@ -55,8 +55,8 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
         run {
 
             if (textureList.size != 1) {
-                var totalArea = 0
-                var largestWidth = 0
+                var totalArea = 0L
+                var largestWidth = 0L
                 for (entry in textureList) {
                     totalArea += entry.texture.width * entry.texture.height
                     if (entry.texture.width > largestWidth){
@@ -67,15 +67,15 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
                 // The width and height should become roughly the same
                 // The width will initially be bigger because the height will be increasing if things don't fit perfectly
                 val sqrtArea = sqrt(totalArea.toDouble())
-                val width = max(largestWidth, nextPowerOf2(sqrtArea.toInt()))
+                val width = max(largestWidth, nextPowerOf2(sqrtArea.toLong()))
 
                 // There are probably better algorithms for this, but this should be reasonable enough
                 val heightSorted = ArrayList<TextureEntry>(textureList)
                 heightSorted.sortBy { it.texture.height }
 
-                var localHeight = 0
-                var currentX = 0
-                var currentY = 0
+                var localHeight = 0L
+                var currentX = 0L
+                var currentY = 0L
                 for (entry in heightSorted) {
 
                     entry.offsetX = currentX
@@ -101,7 +101,7 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
                 fullTexture.clearColor(200, 0, 200)
 
                 for (entry in textureList) {
-                    entry.texture.copyTo(fullTexture, entry.offsetX!!, entry.offsetY!!)
+                    entry.texture.copy(fullTexture, entry.offsetX!!, entry.offsetY!!)
                 }
             } else {
                 val texture = textureList[0].texture
@@ -113,7 +113,7 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
                     val fullTextureCapacity = 4L * width.toLong() * height.toLong()
                     val fullTextureAddress = textureStack.push(fullTextureCapacity)
                     fullTexture = TextureBuilder(fullTextureAddress, width, height)
-                    texture.copyTo(fullTexture, 0, 0)
+                    texture.copy(fullTexture, 0, 0)
                 }
                 textureList[0].offsetX = 0
                 textureList[0].offsetY = 0
@@ -140,6 +140,6 @@ class BasicModelBuilder<M>(val name: String, val modelData: M,
 
 class TextureEntry(val texture: TextureBuilder, val id: Int){
 
-    internal var offsetX: Int? = null
-    internal var offsetY: Int? = null
+    internal var offsetX: Long? = null
+    internal var offsetY: Long? = null
 }
