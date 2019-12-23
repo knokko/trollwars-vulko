@@ -48,7 +48,7 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
 
                 for (length in 0 until modelProps.tailNumVertexRings) {
                     val currentRadius = modelProps.tailRadius * modelProps.tailRadiusFunction(length / (modelProps.tailNumVertexRings - 1f))
-                    val u = length * textureWidth / modelProps.tailNumVertexRings
+                    val u = length * textureWidth.toInt() / modelProps.tailNumVertexRings
                     val tailMatrix = run {
                         val tailMatrixIndexFloat = length.toFloat() * (modelProps.tailMatrixParts - 1) / (modelProps.tailNumVertexRings - 1)
                         val tailMatrixIndexInt = tailMatrixIndexFloat.toInt()
@@ -73,7 +73,7 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
                             0f,
                             textureID,
                             u,
-                            angleI * textureHeight / modelProps.verticesPerRing,
+                            angleI * textureHeight.toInt() / modelProps.verticesPerRing,
                             tailMatrix
                         )
                     }

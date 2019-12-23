@@ -10,7 +10,7 @@ const val TWO_PI = 2.0 * PI
 const val MAX_VERT_ANGLE = 70.0 * PI / 180.0
 
 fun drawGrass(stack: VirtualStack, texture: TextureBuilder, baseColor: Int, brightColor: Int, backgroundColor: Int,
-              minX: Int = 0, minY: Int = 0, drawWidth: Int = texture.width, drawHeight: Int = texture.height,
+              minX: Int = 0, minY: Int = 0, drawWidth: Int = texture.width.toInt(), drawHeight: Int = texture.height.toInt(),
               scale: Int = 1, rand: Random = Random()){
 
     val startTime = System.currentTimeMillis()

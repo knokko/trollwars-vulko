@@ -41,10 +41,28 @@ allprojects {
 
 }
 
+project(':vulko-memory') {
+    dependencies {
+        compile "org.lwjgl:lwjgl:$lwjglVersion"
+        compile "org.joml:joml:$jomlVersion"
+
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
+    }
+}
+
 project(':vulko-textures') {
     dependencies {
         implementation project(':vulko-util')
         implementation project(':vulko-memory')
+
+        compile "org.lwjgl:lwjgl:$lwjglVersion"
+        compile "org.joml:joml:$jomlVersion"
+
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     }
 }
 

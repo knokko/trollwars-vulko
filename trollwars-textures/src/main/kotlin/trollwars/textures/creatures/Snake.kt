@@ -9,15 +9,15 @@ class SnakeTextureProperties(val colorPattern: TextureBuilder, val skinColor: In
                              val scaleLength: Int = 55, val scaleWidth: Int = 35,
                              val scaleOffsetLength: Int = 42, val scaleOffsetWidth: Int = 21) {
 
-    fun getFullWidth() : Int {
+    fun getFullWidth() : Long {
         return when (scaleLength <= scaleOffsetLength) {
-            true -> colorPattern.width.toInt() * scaleOffsetLength
-            false -> (colorPattern.width.toInt() - 1) * scaleOffsetLength + scaleLength
+            true -> colorPattern.width * scaleOffsetLength
+            false -> (colorPattern.width - 1) * scaleOffsetLength + scaleLength
         }
     }
 
-    fun getFullHeight() : Int {
-        return 2 * (colorPattern.height.toInt() - 1) * scaleOffsetWidth
+    fun getFullHeight() : Long {
+        return 2 * (colorPattern.height - 1) * scaleOffsetWidth
     }
 }
 
