@@ -11,12 +11,13 @@ import vulko.models.building.BasicModelBuilder
 import vulko.models.building.STEP_SIZE
 import vulko.models.building.TRIANGLE_BYTES
 import java.io.Closeable
-import java.lang.Math.sqrt
 import java.nio.FloatBuffer
+import java.util.*
 import kotlin.math.pow
 
 class SnakeModelProperties(val tailLength: Float = 2.5f, val tailRadius: Float = 0.1f,
-                           val tailParts: Int = 20, val verticesPerRing: Int = 20,
+                           val tailMatrixParts: Int = 10,
+                           val tailNumVertexRings: Int = 10 * tailMatrixParts, val verticesPerRing: Int = 20,
                            val tailRadiusFunction: (Float) -> Float = DEFAULT_TAIL_RADIUS_FUNCTION)
 
 val DEFAULT_TAIL_RADIUS_FUNCTION: (Float) -> Float = {progress ->
@@ -24,8 +25,8 @@ val DEFAULT_TAIL_RADIUS_FUNCTION: (Float) -> Float = {progress ->
 }
 
 fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, user: ModelUser) : RotationSnake {
-    val vertexCapacity = modelProps.tailParts * modelProps.verticesPerRing * STEP_SIZE * 3 / 2
-    val indexCapacity = (modelProps.tailParts - 1) * (modelProps.verticesPerRing - 1) * 2 * TRIANGLE_BYTES
+    val vertexCapacity = modelProps.tailNumVertexRings * modelProps.verticesPerRing * STEP_SIZE * 3 / 2
+    val indexCapacity = (modelProps.tailNumVertexRings - 1) * (modelProps.verticesPerRing - 1) * 2 * TRIANGLE_BYTES
     stack.pushForChunk(vertexCapacity.toLong()).use { vertexChunk ->
         stack.pushForChunk(indexCapacity.toLong()).use { indexChunk ->
             val textureProps = createSnake1Properties(stack)
@@ -42,10 +43,25 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
                 val textureWidth = textureSpace.texture.width
                 val textureHeight = textureSpace.texture.height
 
-                val tailMatrices = Array(modelProps.tailParts) { builder.getNextMatrixID() }
+                val tailMatrices = Array(modelProps.tailMatrixParts) { builder.getNextMatrixID() }
+                val tailPartLength = modelProps.tailLength / modelProps.tailMatrixParts
 
-                for (length in 0 until modelProps.tailParts) {
-                    val currentRadius = modelProps.tailRadius * modelProps.tailRadiusFunction(length / (modelProps.tailParts - 1f))
+                for (length in 0 until modelProps.tailNumVertexRings) {
+                    val currentRadius = modelProps.tailRadius * modelProps.tailRadiusFunction(length / (modelProps.tailNumVertexRings - 1f))
+                    val u = length * textureWidth / modelProps.tailNumVertexRings
+                    val tailMatrix = run {
+                        val tailMatrixIndexFloat = length.toFloat() * (modelProps.tailMatrixParts - 1) / (modelProps.tailNumVertexRings - 1)
+                        val tailMatrixIndexInt = tailMatrixIndexFloat.toInt()
+                        val tailMatrixIndexFract = tailMatrixIndexFloat - tailMatrixIndexInt
+                        var tailMatrix = tailMatrices[tailMatrixIndexInt] * (1f - tailMatrixIndexFract)
+
+                        // The condition below is always true, except for possibly the last parts due to rounding errors
+                        if (tailMatrixIndexInt + 1 < tailMatrices.size)
+                            tailMatrix += tailMatrixIndexFract * tailMatrices[tailMatrixIndexInt + 1]
+                        tailMatrix
+                    }
+
+                    println("u is $u and tailMatrix is $tailMatrix")
                     for (angleI in 0..modelProps.verticesPerRing) {
                         val angle = angleI * 2.0 * StrictMath.PI / modelProps.verticesPerRing.toDouble()
                         vertices.add(
@@ -56,14 +72,14 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
                             StrictMath.sin(angle).toFloat(),
                             0f,
                             textureID,
-                            length * textureWidth / modelProps.tailParts,
+                            u,
                             angleI * textureHeight / modelProps.verticesPerRing,
-                            tailMatrices[length]
+                            tailMatrix
                         )
                     }
                 }
 
-                for (height in 1 until modelProps.tailParts) {
+                for (height in 1 until modelProps.tailNumVertexRings) {
                     val prevHeight = height - 1
                     for (angleI in 1..modelProps.verticesPerRing) {
                         val prevAngle = angleI - 1
@@ -83,7 +99,7 @@ fun createModelSnake1(stack: VirtualStack, modelProps: SnakeModelProperties, use
                 user(buffer)
 
                 // By closing the use-statements, the memory is returned
-                return RotationSnake(tailMatrices, modelProps.tailLength / modelProps.tailParts)
+                return RotationSnake(tailMatrices, tailPartLength)
             }
         }
     }
@@ -146,8 +162,7 @@ class RotationSnake(private val tailMatrices: Array<Int>, private val partLength
                 nextMatrix.mul(prevMatrix, prevMatrix)
 
                 // Store nextMatrix * prevMatrix into the global buffer
-                globalMatrixBuffer.position(tailMatrices[tailIndex] * 16)
-                prevMatrix.get(globalMatrixBuffer)
+                prevMatrix.get(tailMatrices[tailIndex] * 16, globalMatrixBuffer)
             }
 
             // Update the higher indices (towards the head)
@@ -162,8 +177,7 @@ class RotationSnake(private val tailMatrices: Array<Int>, private val partLength
                 nextMatrix.mul(prevMatrix, prevMatrix)
 
                 // Store nextMatrix * prevMatrix into the global buffer
-                globalMatrixBuffer.position(tailMatrices[tailIndex] * 16)
-                prevMatrix.get(globalMatrixBuffer)
+                prevMatrix.get(tailMatrices[tailIndex] * 16, globalMatrixBuffer)
             }
 
             // Set the positions of the matrix buffers back to 0

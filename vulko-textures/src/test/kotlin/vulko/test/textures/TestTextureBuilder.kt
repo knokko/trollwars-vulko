@@ -9,13 +9,31 @@ import kotlin.IllegalArgumentException
 
 class TestTextureBuilder {
 
-    private fun withTexture(width: Int, height: Int, test: (TextureBuilder) -> Unit) {
-        val address = UNSAFE.allocateMemory(width * height * 4L)
-        val texture = TextureBuilder(address, width, height)
+    private fun withTexture(width: Long, height: Long, test: (TextureBuilder) -> Unit) {
+        val textureBytes = 4L * width * height
+        val bufferAddress = UNSAFE.allocateMemory(5 * textureBytes)
+        val textureAddress = bufferAddress + 2 * textureBytes
 
+        // Fill the buffer with the test byte and check later if the buffer wasn't touched
+        val testValue: Byte = 15
+        UNSAFE.setMemory(bufferAddress, textureAddress - bufferAddress, testValue)
+        // intentionally don't touch the texture space itself
+        UNSAFE.setMemory(textureAddress + textureBytes, 2 * textureBytes, testValue)
+        val texture = TextureBuilder(textureAddress, width, height)
+
+        // Perform the actual tests
         test(texture)
 
-        UNSAFE.freeMemory(address)
+        // Check that the memory outside the texture space wasn't touched, note that this is only a best attempt
+        for (testAddress in bufferAddress until textureAddress) {
+            assertEquals(testValue, UNSAFE.getByte(testAddress))
+        }
+        for (testAddress in textureAddress + textureBytes until bufferAddress + 5 * textureBytes) {
+            assertEquals(testValue, UNSAFE.getByte(testAddress))
+        }
+
+        // Finally free the buffer memory
+        UNSAFE.freeMemory(bufferAddress)
     }
 
     private fun testColorConversion(tb: TextureBuilder, red: Int, green: Int, blue: Int, alpha: Int) {
@@ -296,5 +314,121 @@ class TestTextureBuilder {
         }
     }
 
-    // TODO Test verticalLine, copy, compress and BufferedImage operations
+    private fun testVerticalLine(tb: TextureBuilder, rgba: Int, lineX: Long, minY: Long, maxY: Long){
+
+        // First ensure that no single pixel already has the rgba for the line to draw
+        for (x in 0 until tb.width.toLong()) {
+            for (y in 0 until tb.height.toLong()) {
+                assertNotEquals(rgba, tb.getPixel(x, y))
+            }
+        }
+
+        tb.fillVerticalLine(rgba, lineX, minY, maxY - minY + 1)
+
+        // Ensure that exactly the pixels on the line changed to the rgba
+        for (x in 0 until tb.width.toLong()) {
+            for (y in 0 until tb.height.toLong()) {
+                if (x == lineX && y in minY..maxY) {
+                    assertEquals(rgba, tb.getPixel(x, y))
+                } else {
+                    assertNotEquals(rgba, tb.getPixel(x, y))
+                }
+            }
+        }
+    }
+
+    private fun testBadVerticalLine(tb: TextureBuilder, lineX: Long, minY: Long, maxY: Long){
+        try {
+            tb.fillVerticalLine(0, lineX, minY, maxY - minY + 1)
+            throw AssertionError("fillVerticalLine should have thrown IllegalArgumentException")
+        } catch (ex: IllegalArgumentException) { }
+    }
+
+    @Test
+    fun testVerticalLine() {
+        withTexture(10, 20) {
+            it.clearColor(0)
+
+            // Edge cases
+            testVerticalLine(it, 1, 0, 0, 19)
+            testVerticalLine(it, 2, 9, 0, 19)
+
+            // Normal cases
+            testVerticalLine(it, 3, 4, 2, 7)
+            testVerticalLine(it, 4, 8, 10, 19)
+
+            // Bad edge cases
+            testBadVerticalLine(it, -1, 4, 15)
+            testBadVerticalLine(it, 20, 10, 19)
+            testBadVerticalLine(it, 4, 5, 20)
+            testBadVerticalLine(it, 9, -1, 17)
+            testBadVerticalLine(it, Long.MAX_VALUE, 10, 13)
+            testBadVerticalLine(it, 9, Long.MIN_VALUE, 10)
+            testBadVerticalLine(it, 2, 3, Long.MAX_VALUE)
+            testBadVerticalLine(it, 6, 10, 9)
+        }
+    }
+
+    fun testCopy(source: TextureBuilder, dest: TextureBuilder, sourceX: Long, sourceY: Long, destX: Long, destY: Long,
+                 copyWidth: Long, copyHeight: Long){
+
+        // Do a manual copy to check if the result of the copy() method is equal to the manual result
+        val testCopyAddress = UNSAFE.allocateMemory(4L * copyWidth * copyHeight)
+        val testCopy = TextureBuilder(testCopyAddress, copyWidth, copyHeight)
+        for (x in 0 until copyWidth){
+            for (y in 0 until copyHeight){
+                val rgba = source.getPixel(x + sourceX, y + sourceY)
+                testCopy.setPixel(x, y, source.getRed(rgba), source.getGreen(rgba), source.getBlue(rgba), source.getAlpha(rgba))
+            }
+        }
+
+        source.copy(dest, sourceX, sourceY, destX, destY, copyWidth, copyHeight)
+
+        // Compare dest area with the manual copy
+        for (x in 0 until copyWidth){
+            for (y in 0 until copyHeight){
+                val d = dest.getPixel(destX + x, destY + y)
+                val t = testCopy.getPixel(x, y)
+                assertEquals(testCopy.getRed(t), dest.getRed(d))
+                assertEquals(testCopy.getGreen(t), dest.getGreen(d))
+                assertEquals(testCopy.getBlue(t), dest.getBlue(d))
+                assertEquals(testCopy.getAlpha(t), dest.getAlpha(d))
+            }
+        }
+
+        // Free the memory of the test texture
+        UNSAFE.freeMemory(testCopyAddress)
+    }
+
+    fun testBadCopy(source: TextureBuilder, dest: TextureBuilder, sourceX: Long, sourceY: Long,
+                    destX: Long, destY: Long, copyWidth: Long, copyHeight: Long){
+        try {
+            source.copy(dest)
+            throw AssertionError("copy should have thrown an IllegalArgumentException")
+        } catch (ex: IllegalArgumentException) {}
+    }
+
+    @Test
+    fun testCopy(){
+        withTexture(7, 11){small ->
+            withTexture(8, 14){large ->
+
+                // Edge cases
+                testCopy(small, large, 0, 0, 0, 0, 7, 11)
+                testCopy(small, large, 0, 0, 1, 3, 7, 11)
+                testCopy(small, large, 1, 1, 0, 0, 5, 6)
+                testCopy(large, small, 0, 0, 0, 0, 7, 11)
+                testCopy(large, small, 0, 0, 0, 0, 1, 11)
+                testCopy(large, small, 0, 10, 1, 0, 7, 1)
+
+                // Normal cases
+                testCopy(small, large, 2, 1, 4, 5, 5, 8)
+                testCopy(large, small, 1, 3, 5, 4, 2, 3)
+
+                // Bad edge cases
+            }
+        }
+    }
+
+    // TODO Test compress, build and BufferedImage operations
 }

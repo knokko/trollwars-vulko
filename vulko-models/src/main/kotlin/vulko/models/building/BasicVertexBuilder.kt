@@ -17,7 +17,7 @@ private const val OFFSET_MATRIX = OFFSET_TEX_COORDS + 4 * VALUES_TEX_COORDS
 
 class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: Long) : AbstractBuilder(startAddress, boundAddress){
 
-    fun add(x: Float, y: Float, z: Float, nx: Float, ny: Float, nz: Float, textureID: Int, u: Int, v: Int, matrix: Int){
+    fun add(x: Float, y: Float, z: Float, nx: Float, ny: Float, nz: Float, textureID: Int, u: Int, v: Int, matrix: Float){
         UNSAFE.putFloat(currentAddress, x)
         UNSAFE.putFloat(currentAddress + 4, y)
         UNSAFE.putFloat(currentAddress + 8, z)
@@ -30,7 +30,7 @@ class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: 
         UNSAFE.putInt(currentAddress + 28, u)
         UNSAFE.putInt(currentAddress + 32, v)
 
-        UNSAFE.putInt(currentAddress + 36, matrix)
+        UNSAFE.putFloat(currentAddress + 36, matrix)
 
         currentAddress += STEP_SIZE
     }
@@ -83,7 +83,7 @@ class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: 
         }
 
         // The final matrix index
-        UNSAFE.putInt(writeAddress, UNSAFE.getInt(readAddress))
+        UNSAFE.putFloat(writeAddress, UNSAFE.getFloat(readAddress))
 
         // Prevent any further add calls by making sure they will cause JVM crash
         currentAddress = 0

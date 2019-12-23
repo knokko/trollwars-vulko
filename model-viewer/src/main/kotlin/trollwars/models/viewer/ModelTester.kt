@@ -7,6 +7,8 @@ import org.lwjgl.BufferUtils
 
 import org.lwjgl.glfw.GLFW.*
 import org.lwjgl.opengl.GL
+import org.lwjgl.opengl.GL32
+import org.lwjgl.opengl.GL41
 import org.lwjgl.opengl.GL43.*
 import org.lwjgl.system.MemoryUtil.*
 import trollwars.models.creatures.RotationSnake
@@ -16,12 +18,15 @@ import vulko.memory.MemoryManager
 import vulko.models.buffer.*
 import java.lang.StrictMath.*
 import java.nio.ByteBuffer
+import java.nio.FloatBuffer
 import java.util.*
 
 const val WIDTH = 1000
 const val HEIGHT = 800
 
 fun printByteBuffer(buffer: ByteBuffer){
+
+    /*
     val testFloatArray = FloatArray(min(buffer.capacity() / 4, 200))
     buffer.asFloatBuffer().get(testFloatArray)
     println("Test float array is ${Arrays.toString(testFloatArray)}")
@@ -32,7 +37,21 @@ fun printByteBuffer(buffer: ByteBuffer){
 
     val testByteArray = ByteArray(min(buffer.capacity(), 200))
     buffer.get(testByteArray)
-    println("Test byte array is ${Arrays.toString(testByteArray)}")
+    println("Test byte array is ${Arrays.toString(testByteArray)}")*/
+    val floats = buffer.asFloatBuffer()
+    floats.position(0)
+    for (counter in 0 until floats.capacity() step 9) {
+        println("Vertex: position(${floats.get()},${floats.get()},${floats.get()}) " +
+                "normal(${floats.get()},${floats.get()},${floats.get()}) texCoords(${floats.get()},${floats.get()}) " +
+                "matrix(${floats.get()})")
+    }
+}
+
+fun printFloatBuffer(buffer: FloatBuffer){
+    val testFloatArray = FloatArray(buffer.capacity())
+    buffer.get(testFloatArray)
+    println("Test float array is ${Arrays.toString(testFloatArray)}")
+    //println("buffer capacity is ${buffer.capacity()} and remaining is ${buffer.remaining()}")
 }
 
 const val FULL_CAPACITY = 100_000_000L
@@ -51,6 +70,7 @@ fun main(){
 
     val vertexShader = glCreateShader(GL_VERTEX_SHADER)
     glShaderSource(vertexShader, Resources.readResourceAsString("trollwars/models/viewer/shaders/basic.vert", "\n"))
+    println(Resources.readResourceAsString("trollwars/models/viewer/shaders/basic.vert", "\n"))
     glCompileShader(vertexShader)
     println("vertex compile info: ${glGetShaderInfoLog(vertexShader)}")
 
@@ -96,6 +116,8 @@ fun main(){
                 glBindBuffer(GL_ARRAY_BUFFER, vertexBuffer)
                 glBufferData(GL_ARRAY_BUFFER, modelBuffer.createBackingVertexBuffer(), GL_STATIC_DRAW)
 
+                printByteBuffer(modelBuffer.createBackingVertexBuffer())
+
                 glBindBuffer(GL_ELEMENT_ARRAY_BUFFER, indexBuffer)
                 glBufferData(GL_ELEMENT_ARRAY_BUFFER, modelBuffer.createBackingIndexBuffer(), GL_STATIC_DRAW)
 
@@ -107,10 +129,11 @@ fun main(){
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR)
                 glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR)
                 glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA8, modelBuffer.textureWidth, modelBuffer.textureHeight, 0, GL_RGBA, GL_UNSIGNED_BYTE, modelBuffer.createBackingTextureBuffer())
-                printByteBuffer(modelBuffer.createBackingTextureBuffer())
             }
         }
     }
+
+    println("indexCount is $indexCount")
 
     glUseProgram(basicShaderProgram)
     rotation!!.resetRotation()
@@ -125,6 +148,7 @@ fun main(){
 
     rotation!!.resetRotation()
     updateSubMatrices()
+    printFloatBuffer(rotation!!.getBackingMatrixBuffer())
 
     val baseMatrixBuffer = BufferUtils.createFloatBuffer(16)
     baseMatrixBuffer.limit(16)
@@ -153,7 +177,7 @@ fun main(){
         BYTES_PER_VERTEX,
         OFFSET_TEXTURE_COORDS.toLong()
     )
-    glVertexAttribIPointer(3, 1, GL_INT, BYTES_PER_VERTEX, OFFSET_MATRIX.toLong())
+    glVertexAttribPointer(3, 1, GL_FLOAT, false, BYTES_PER_VERTEX, OFFSET_MATRIX.toLong())
 
     println("Error4: ${glGetError()}")
 
