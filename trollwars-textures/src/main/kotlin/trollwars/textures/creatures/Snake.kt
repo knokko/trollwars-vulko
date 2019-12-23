@@ -11,22 +11,22 @@ class SnakeTextureProperties(val colorPattern: TextureBuilder, val skinColor: In
 
     fun getFullWidth() : Int {
         return when (scaleLength <= scaleOffsetLength) {
-            true -> colorPattern.width * scaleOffsetLength
-            false -> (colorPattern.width - 1) * scaleOffsetLength + scaleLength
+            true -> colorPattern.width.toInt() * scaleOffsetLength
+            false -> (colorPattern.width.toInt() - 1) * scaleOffsetLength + scaleLength
         }
     }
 
     fun getFullHeight() : Int {
-        return 2 * (colorPattern.height - 1) * scaleOffsetWidth
+        return 2 * (colorPattern.height.toInt() - 1) * scaleOffsetWidth
     }
 }
 
 // Yeah yeah, I should give this type of snake a proper name instead of 'snake1'
 fun createSnake1Properties(stack: VirtualStack, rng: Random = Random()) : SnakeTextureProperties {
-    val inputWidth = 100
+    val inputWidth = 100L
 
     // NOTE THAT IT IS CURRENTLY REQUIRED THAT inputHeight IS EVEN
-    val inputHeight = 20
+    val inputHeight = 20L
     val inputAddress = stack.push(4L * inputWidth * inputHeight)
     val inputTexture = TextureBuilder(inputAddress, inputWidth, inputHeight)
     val upperRed = 20
@@ -49,10 +49,10 @@ fun createSnake1Properties(stack: VirtualStack, rng: Random = Random()) : SnakeT
         return fix(x - x / 20 + rng.nextInt(x / 10 + 1))
     }
 
-    for (distX in 0 .. halfHeight){
-        val upperFactor = halfHeight - distX
+    for (distX in 0 .. halfHeight.toInt()){
+        val upperFactor = halfHeight.toInt() - distX
         val lowerFactor = distX
-        val divider = halfHeight
+        val divider = halfHeight.toInt()
         val red = (upperFactor * upperRed + lowerFactor * lowerRed) / divider
         val green = (upperFactor * upperGreen + lowerFactor * lowerGreen) / divider
         val blue = (upperFactor * upperBlue + lowerFactor * lowerBlue) / divider
@@ -64,8 +64,8 @@ fun createSnake1Properties(stack: VirtualStack, rng: Random = Random()) : SnakeT
             val currentGreen = rand(green)
             val currentBlue = rand(blue)
             val rgba = inputTexture.rgbaFor(currentRed, currentGreen, currentBlue)
-            inputTexture.setPixel(patternX.toLong(), smallY.toLong(), rgba)
-            inputTexture.setPixel(patternX.toLong(), bigY.toLong(), rgba)
+            inputTexture.setPixel(patternX, smallY, rgba)
+            inputTexture.setPixel(patternX, bigY, rgba)
         }
     }
 
@@ -74,15 +74,15 @@ fun createSnake1Properties(stack: VirtualStack, rng: Random = Random()) : SnakeT
     val bottomBlue = 200
 
     for (patternX in 0 until inputWidth){
-        inputTexture.setPixel(patternX.toLong(), inputTexture.height - 1L, rand(bottomRed), rand(bottomGreen), rand(bottomBlue))
+        inputTexture.setPixel(patternX, inputTexture.height - 1L, rand(bottomRed), rand(bottomGreen), rand(bottomBlue))
     }
 
     return SnakeTextureProperties(inputTexture, inputTexture.rgbaFor(90, 0, 130))
 }
 
 fun snakePatternToTailTexture(stack: VirtualStack, props: SnakeTextureProperties) : TextureBuilder {
-    val textureWidth = props.getFullWidth()
-    val textureHeight = props.getFullHeight()
+    val textureWidth = props.getFullWidth().toLong()
+    val textureHeight = props.getFullHeight().toLong()
     val textureAddress = stack.push(4L * textureWidth * textureHeight)
     val texture = TextureBuilder(textureAddress, textureWidth, textureHeight)
     return snakePatternToTailTexture(texture, props)
@@ -109,12 +109,12 @@ fun snakePatternToTailTexture(texture: TextureBuilder, props: SnakeTextureProper
                 val boundY = ceilDiv(props.scaleWidth, 2) + relevantY
 
                 texture.fillVerticalLine(props.colorPattern.getPixel(patternX.toLong(), patternY.toLong()),
-                    textureX + relativeX, textureY + minY, boundY - minY)
+                    textureX + relativeX, textureY + minY, boundY.toLong() - minY)
             }
         }
 
         texture.fillRect(props.colorPattern.getPixel(patternX.toLong(), props.colorPattern.height - 1L),
-            textureX.toLong(), texture.height / 2L, props.scaleLength.toLong(), texture.height.toLong() / 2L)
+            textureX.toLong(), texture.height / 2L, props.scaleLength.toLong(), texture.height / 2L)
     }
     return texture
 }

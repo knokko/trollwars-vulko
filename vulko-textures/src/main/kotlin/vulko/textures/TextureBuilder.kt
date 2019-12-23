@@ -1,6 +1,6 @@
 package vulko.textures
 
-import org.lwjgl.system.MemoryUtil.*
+import vulko.memory.util.*
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
@@ -61,7 +61,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         // Fill the first row
         var fillAddress = startAddress
         for (counterX in 0 until width){
-            memPutInt(fillAddress, rgba)
+            putInt(fillAddress, rgba)
             fillAddress += 4
         }
 
@@ -71,7 +71,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         fillAddress = startAddress
         for (currentY in minY + 1 until boundY) {
             fillAddress += rowLength
-            memCopy(startAddress, fillAddress, fillLength)
+            copy(startAddress, fillAddress, fillLength)
         }
     }
 
@@ -87,7 +87,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         // Let addressFor do the rest of the bounds checking
         var address = addressFor(minX, y)
         for (counter in 0 until length){
-            memPutInt(address, rgba)
+            putInt(address, rgba)
             address += 4
         }
     }
@@ -99,14 +99,14 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         // The addressFor method will do the other bounds checks
         var address = addressFor(x, minY)
         for (counter in 0 until length){
-            memPutInt(address, rgba)
+            putInt(address, rgba)
             address += 4 * width
         }
     }
 
     fun clearColor(rgba: Int){
         for (currentAddress in (address until boundAddress).step(4)){
-            memPutInt(currentAddress, rgba)
+            putInt(currentAddress, rgba)
         }
     }
 
@@ -120,7 +120,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
      */
     @Throws(IllegalArgumentException::class)
     fun setPixel(x: Long, y: Long, rgba: Int){
-        memPutInt(addressFor(x, y), rgba)
+        putInt(addressFor(x, y), rgba)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -136,7 +136,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
      */
     @Throws(IllegalArgumentException::class)
     fun getPixel(x: Long, y: Long) : Int {
-        return memGetInt(addressFor(x, y))
+        return getInt(addressFor(x, y))
     }
 
     fun getRed(rgba: Int) : Int {
@@ -194,7 +194,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         var currentAddress = address
         for (y in 0 until height.toInt()){
             for (x in 0 until width.toInt()){
-                val storedRGBA = memGetInt(currentAddress)
+                val storedRGBA = getInt(currentAddress)
                 currentAddress += 4
 
                 // Do an explicit conversion to avoid any possible endian trouble
@@ -215,14 +215,14 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
             var address = addressFor(minX, (minY + imageY))
             for (imageX in 0 until copyWidth){
                 val color = Color(image.getRGB(imageX, imageY))
-                memPutInt(address, rgbaFor(color.red, color.green, color.blue, color.alpha))
+                putInt(address, rgbaFor(color.red, color.green, color.blue, color.alpha))
                 address += 4
             }
         }
     }
 
     fun copy(destAddress: Long) : TextureBuilder {
-        memCopy(address, destAddress, 4L * width.toLong() * height.toLong())
+        copy(address, destAddress, 4L * width.toLong() * height.toLong())
         return TextureBuilder(destAddress, width, height)
     }
 
@@ -239,7 +239,7 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         for (ownY in 0 until copyHeight){
             val srcAddress = addressFor(0L, ownY)
             val destAddress = dest.addressFor(destX, ownY + destY)
-            memCopy(srcAddress, destAddress, byteCopyWidth)
+            copy(srcAddress, destAddress, byteCopyWidth)
         }
     }
 
@@ -253,12 +253,12 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         var currentAddress = address
         for (y in 0 until height){
             for (x in 0 until width){
-                val storedRGBA = memGetInt(currentAddress)
+                val storedRGBA = getInt(currentAddress)
 
-                memPutByte(currentAddress++, getRed(storedRGBA).toByte())
-                memPutByte(currentAddress++, getGreen(storedRGBA).toByte())
-                memPutByte(currentAddress++, getBlue(storedRGBA).toByte())
-                memPutByte(currentAddress++, getAlpha(storedRGBA).toByte())
+                putByte(currentAddress++, getRed(storedRGBA).toByte())
+                putByte(currentAddress++, getGreen(storedRGBA).toByte())
+                putByte(currentAddress++, getBlue(storedRGBA).toByte())
+                putByte(currentAddress++, getAlpha(storedRGBA).toByte())
             }
         }
     }
