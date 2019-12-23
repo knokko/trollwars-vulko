@@ -14,7 +14,6 @@ void main(){
     int matrixIndexInt = int(matrixIndex);
     float matrixIndexFract = matrixIndex - matrixIndexInt;
     mat4 subMatrix = subMatrices[matrixIndexInt] * (1 - matrixIndexFract) + matrixIndexFract * subMatrices[matrixIndexInt + 1];
-    //mat4 subMatrix = subMatrices[matrixIndexInt];
-    gl_Position = baseMatrix * subMatrix * vec4(modelPosition + vec3(0.0, matrixIndexFract * 0.1, 0.0), 1.0);
+    gl_Position = baseMatrix * subMatrix * vec4(modelPosition, 1.0);
     passTextureCoords = textureCoords;
 }
