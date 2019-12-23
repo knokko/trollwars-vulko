@@ -1,15 +1,43 @@
 package vulko.textures
 
-import vulko.memory.util.UNSAFE
+import org.lwjgl.system.MemoryUtil.*
 import java.awt.Color
 import java.awt.image.BufferedImage
 import java.io.File
-import java.lang.Integer.min
 import javax.imageio.ImageIO
+import kotlin.math.min
 
-class TextureBuilder(val address: Long, val width: Int, val height: Int) {
+class TextureBuilder(val address: Long, val width: Long, val height: Long) {
 
-    val boundAddress = address + 4 * width.toLong() * height.toLong()
+    val boundAddress = address + 4 * width * height
+
+    @Throws(IllegalArgumentException::class)
+    private fun checkMinLengthBoundsX(min: Long, length: Long, minName: String = "minX", lengthName: String = "length",
+                                      widthName: String = "this.width") {
+        if (length <= 0){
+            throw IllegalArgumentException("$lengthName must be positive, but is $length")
+        }
+        if (min + length > width){
+            throw IllegalArgumentException("$minName and $lengthName are $min and $length, but $widthName is $width")
+        }
+        if (min + length < min){
+            throw IllegalArgumentException("Adding $lengthName to $minName (Adding $length to $min) would cause overflow")
+        }
+    }
+
+    @Throws(IllegalArgumentException::class)
+    private fun checkMinLengthBoundsY(min: Long, length: Long, minName: String = "minY", lengthName: String = "length",
+                                      heightName: String = "this.height") {
+        if (length <= 0){
+            throw IllegalArgumentException("$lengthName must be positive, but is $length")
+        }
+        if (min + length > height){
+            throw IllegalArgumentException("$minName and $lengthName are $min and $length, but $heightName is $height")
+        }
+        if (min + length < min){
+            throw IllegalArgumentException("Adding $lengthName to $minName (Adding $length to $min) would cause overflow")
+        }
+    }
 
     fun rgbaFor(red: Int, green: Int, blue: Int, alpha: Int = 255) : Int {
         return red + (green shl 8) + (blue shl 16) + (alpha shl 24)
@@ -25,25 +53,15 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
 
     @Throws(IllegalArgumentException::class)
     fun fillRect(rgba: Int, minX: Long, minY: Long, width: Long, height: Long){
-        if (width <= 0 || height <= 0) {
-            throw IllegalArgumentException("Width and height must be positive, but are ($width, $height)")
-        }
-        if (minX + width < minX) {
-            throw IllegalArgumentException("Adding width ($width) to minX ($minX) would cause overflow")
-        }
-        if (minY + height < minY) {
-            throw IllegalArgumentException("Adding height ($height) to minY ($minY) would cause overflow")
-        }
-        if (minX < 0 || minY < 0 || minX + width > this.width || minY + height > this.height){
-            throw IllegalArgumentException("Own size is (${this.width},${this.height}) and params are ($minX,$minY,$width,$height)")
-        }
+        checkMinLengthBoundsX(minX, width, lengthName="width")
+        checkMinLengthBoundsY(minY, height, lengthName="height")
         val boundY = minY + height
         val startAddress = addressFor(minX, minY)
 
         // Fill the first row
         var fillAddress = startAddress
         for (counterX in 0 until width){
-            UNSAFE.putInt(fillAddress, rgba)
+            memPutInt(fillAddress, rgba)
             fillAddress += 4
         }
 
@@ -53,42 +71,42 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         fillAddress = startAddress
         for (currentY in minY + 1 until boundY) {
             fillAddress += rowLength
-            UNSAFE.copyMemory(startAddress, fillAddress, fillLength)
+            memCopy(startAddress, fillAddress, fillLength)
         }
     }
 
+    @Throws(IllegalArgumentException::class)
     fun fillRect(red: Int, green: Int, blue: Int, alpha: Int = 255, minX: Long, minY: Long, width: Long, height: Long){
         fillRect(rgbaFor(red, green, blue, alpha), minX, minY, width, height)
     }
 
+    @Throws(IllegalArgumentException::class)
     fun fillHorizontalLine(rgba: Int, minX: Long, y: Long, length: Long){
-        if (y < 0 || y >= height || minX < 0 || minX + length > width || length <= 0){
-            throw IllegalArgumentException("Own size is ($width,$height) and params are ($minX,$y,$length)")
-        }
-        if (minX + length < minX) {
-            throw IllegalArgumentException("Adding length ($length) to minX ($minX) would cause overflow")
-        }
+        checkMinLengthBoundsX(minX, length)
+
+        // Let addressFor do the rest of the bounds checking
         var address = addressFor(minX, y)
         for (counter in 0 until length){
-            UNSAFE.putInt(address, rgba)
+            memPutInt(address, rgba)
             address += 4
         }
     }
 
-    fun fillVerticalLine(rgba: Int, x: Int, minY: Int, length: Int){
-        if (x < 0 || x >= width || minY < 0 || minY + length > height){
-            throw IllegalArgumentException("Own size is ($width,$height) and params are ($x,$minY,$length)")
-        }
-        var address = addressFor(x.toLong(), minY.toLong())
+    @Throws(IllegalArgumentException::class)
+    fun fillVerticalLine(rgba: Int, x: Long, minY: Long, length: Long){
+        checkMinLengthBoundsY(minY, length)
+
+        // The addressFor method will do the other bounds checks
+        var address = addressFor(x, minY)
         for (counter in 0 until length){
-            UNSAFE.putInt(address, rgba)
+            memPutInt(address, rgba)
             address += 4 * width
         }
     }
 
     fun clearColor(rgba: Int){
         for (currentAddress in (address until boundAddress).step(4)){
-            UNSAFE.putInt(currentAddress, rgba)
+            memPutInt(currentAddress, rgba)
         }
     }
 
@@ -102,7 +120,7 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
      */
     @Throws(IllegalArgumentException::class)
     fun setPixel(x: Long, y: Long, rgba: Int){
-        UNSAFE.putInt(addressFor(x, y), rgba)
+        memPutInt(addressFor(x, y), rgba)
     }
 
     @Throws(IllegalArgumentException::class)
@@ -118,7 +136,7 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
      */
     @Throws(IllegalArgumentException::class)
     fun getPixel(x: Long, y: Long) : Int {
-        return UNSAFE.getInt(addressFor(x, y))
+        return memGetInt(addressFor(x, y))
     }
 
     fun getRed(rgba: Int) : Int {
@@ -137,6 +155,7 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         return rgba ushr 24
     }
 
+    // TODO Rename to downscale and create upscale method
     fun compress(factor: Int, dest: TextureBuilder){
         val fs = factor * factor
         if (dest.width * factor != width){
@@ -171,11 +190,11 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
     }
 
     fun saveAsImage(name: String){
-        val image = BufferedImage(width, height, BufferedImage.TYPE_INT_ARGB)
+        val image = BufferedImage(width.toInt(), height.toInt(), BufferedImage.TYPE_INT_ARGB)
         var currentAddress = address
-        for (y in 0 until height){
-            for (x in 0 until width){
-                val storedRGBA = UNSAFE.getInt(currentAddress)
+        for (y in 0 until height.toInt()){
+            for (x in 0 until width.toInt()){
+                val storedRGBA = memGetInt(currentAddress)
                 currentAddress += 4
 
                 // Do an explicit conversion to avoid any possible endian trouble
@@ -186,38 +205,41 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         ImageIO.write(image, "PNG", File("$name.png"))
     }
 
-    fun putBufferedImage(image: BufferedImage, minX: Int, minY: Int){
+    fun putBufferedImage(image: BufferedImage, minX: Long, minY: Long){
         if (minX < 0 || minY < 0){
             throw IllegalArgumentException("minX is $minX and minY is $minY")
         }
-        val copyWidth = min(image.width, width - minX)
-        val copyHeight = min(image.height, height - minY)
+        val copyWidth = min(image.width, (width - minX).toInt())
+        val copyHeight = min(image.height, (height - minY).toInt())
         for (imageY in 0 until copyHeight){
-            var address = addressFor(minX.toLong(), (minY + imageY).toLong())
+            var address = addressFor(minX, (minY + imageY))
             for (imageX in 0 until copyWidth){
                 val color = Color(image.getRGB(imageX, imageY))
-                UNSAFE.putInt(address, rgbaFor(color.red, color.green, color.blue, color.alpha))
+                memPutInt(address, rgbaFor(color.red, color.green, color.blue, color.alpha))
                 address += 4
             }
         }
     }
 
-    fun copyTo(destAddress: Long) : TextureBuilder {
-        UNSAFE.copyMemory(address, destAddress, 4L * width.toLong() * height.toLong())
+    fun copy(destAddress: Long) : TextureBuilder {
+        memCopy(address, destAddress, 4L * width.toLong() * height.toLong())
         return TextureBuilder(destAddress, width, height)
     }
 
-    fun copyTo(dest: TextureBuilder, destX: Int, destY: Int){
-        if (destX < 0 || destY < 0){
-            throw IllegalArgumentException("destX is $destX and destY is $destY")
-        }
-        val copyWidth = min(dest.width - destX, width)
-        val copyHeight = min(dest.height - destY, height)
-        val byteCopyWidth = copyWidth.toLong() * 4L
+    fun copy(dest: TextureBuilder, sourceX: Long = 0, sourceY: Long = 0, destX: Long = 0, destY: Long = 0,
+             copyWidth: Long = min(dest.width - destX, width - sourceX),
+             copyHeight: Long = min(dest.height - destY, height - sourceY)){
+
+        checkMinLengthBoundsX(sourceX, copyWidth, "sourceX", "copyWidth")
+        checkMinLengthBoundsY(sourceY, copyHeight, "sourceX", "copyHeight")
+        dest.checkMinLengthBoundsX(destX, copyWidth, "destX", "copyWidth", "dest.width")
+        dest.checkMinLengthBoundsY(destY, copyHeight, "destY", "copyHeight", "dest.height")
+
+        val byteCopyWidth = copyWidth * 4L
         for (ownY in 0 until copyHeight){
-            val srcAddress = addressFor(0L, ownY.toLong())
-            val destAddress = dest.addressFor(destX.toLong(), (ownY + destY).toLong())
-            UNSAFE.copyMemory(srcAddress, destAddress, byteCopyWidth)
+            val srcAddress = addressFor(0L, ownY)
+            val destAddress = dest.addressFor(destX, ownY + destY)
+            memCopy(srcAddress, destAddress, byteCopyWidth)
         }
     }
 
@@ -231,12 +253,12 @@ class TextureBuilder(val address: Long, val width: Int, val height: Int) {
         var currentAddress = address
         for (y in 0 until height){
             for (x in 0 until width){
-                val storedRGBA = UNSAFE.getInt(currentAddress)
+                val storedRGBA = memGetInt(currentAddress)
 
-                UNSAFE.putByte(currentAddress++, getRed(storedRGBA).toByte())
-                UNSAFE.putByte(currentAddress++, getGreen(storedRGBA).toByte())
-                UNSAFE.putByte(currentAddress++, getBlue(storedRGBA).toByte())
-                UNSAFE.putByte(currentAddress++, getAlpha(storedRGBA).toByte())
+                memPutByte(currentAddress++, getRed(storedRGBA).toByte())
+                memPutByte(currentAddress++, getGreen(storedRGBA).toByte())
+                memPutByte(currentAddress++, getBlue(storedRGBA).toByte())
+                memPutByte(currentAddress++, getAlpha(storedRGBA).toByte())
             }
         }
     }
