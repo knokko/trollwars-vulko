@@ -1,15 +1,15 @@
 package vulko.models.building
 
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 
 const val TRIANGLE_BYTES = 3 * 4
 
 class BasicIndexBuffer internal constructor(startAddress: Long, boundAddress: Long) : AbstractBuilder(startAddress, boundAddress) {
 
     fun bindTriangle(vertexIndex1: Int, vertexIndex2: Int, vertexIndex3: Int){
-        UNSAFE.putInt(currentAddress, vertexIndex1)
-        UNSAFE.putInt(currentAddress + 4, vertexIndex2)
-        UNSAFE.putInt(currentAddress + 8, vertexIndex3)
+        putInt(currentAddress, vertexIndex1)
+        putInt(currentAddress + 4, vertexIndex2)
+        putInt(currentAddress + 8, vertexIndex3)
 
         currentAddress += TRIANGLE_BYTES
     }
@@ -22,7 +22,7 @@ class BasicIndexBuffer internal constructor(startAddress: Long, boundAddress: Lo
 fun createBasicIndexBuffer(triangleCount: Int) : BasicIndexBuffer {
 
     val numBytes = (TRIANGLE_BYTES * triangleCount).toLong()
-    val startAddress = UNSAFE.allocateMemory(numBytes)
+    val startAddress = malloc(numBytes)
     val boundAddress = startAddress + numBytes
     return BasicIndexBuffer(startAddress, boundAddress)
 }

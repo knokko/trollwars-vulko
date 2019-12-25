@@ -3,7 +3,7 @@ package vulko.test.textures
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
 import org.junit.Test
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 import vulko.textures.TextureBuilder
 import kotlin.IllegalArgumentException
 
@@ -11,14 +11,14 @@ class TestTextureBuilder {
 
     private fun withTexture(width: Long, height: Long, test: (TextureBuilder) -> Unit) {
         val textureBytes = 4L * width * height
-        val bufferAddress = UNSAFE.allocateMemory(5 * textureBytes)
+        val bufferAddress = malloc(5 * textureBytes)
         val textureAddress = bufferAddress + 2 * textureBytes
 
         // Fill the buffer with the test byte and check later if the buffer wasn't touched
         val testValue: Byte = 15
-        UNSAFE.setMemory(bufferAddress, textureAddress - bufferAddress, testValue)
+        fill(bufferAddress, textureAddress - bufferAddress, testValue)
         // intentionally don't touch the texture space itself
-        UNSAFE.setMemory(textureAddress + textureBytes, 2 * textureBytes, testValue)
+        fill(textureAddress + textureBytes, 2 * textureBytes, testValue)
         val texture = TextureBuilder(textureAddress, width, height)
 
         // Perform the actual tests
@@ -26,14 +26,14 @@ class TestTextureBuilder {
 
         // Check that the memory outside the texture space wasn't touched, note that this is only a best attempt
         for (testAddress in bufferAddress until textureAddress) {
-            assertEquals(testValue, UNSAFE.getByte(testAddress))
+            assertEquals(testValue, getByte(testAddress))
         }
         for (testAddress in textureAddress + textureBytes until bufferAddress + 5 * textureBytes) {
-            assertEquals(testValue, UNSAFE.getByte(testAddress))
+            assertEquals(testValue, getByte(testAddress))
         }
 
         // Finally free the buffer memory
-        UNSAFE.freeMemory(bufferAddress)
+        free(bufferAddress)
     }
 
     private fun testColorConversion(tb: TextureBuilder, red: Int, green: Int, blue: Int, alpha: Int) {
@@ -56,7 +56,7 @@ class TestTextureBuilder {
     }
 
     private fun testAddressFor(tb: TextureBuilder, rgba: Int, x: Long, y: Long) {
-        UNSAFE.putInt(tb.addressFor(x, y), rgba)
+        putInt(tb.addressFor(x, y), rgba)
         assertEquals(rgba, tb.getPixel(x, y))
     }
 
@@ -98,7 +98,7 @@ class TestTextureBuilder {
     }
 
     private fun testGetPixel(tb: TextureBuilder, x: Long, y: Long) {
-        assertEquals(UNSAFE.getInt(tb.addressFor(x, y)), tb.getPixel(x, y))
+        assertEquals(getInt(tb.addressFor(x, y)), tb.getPixel(x, y))
     }
 
     private fun testBadGetPixel(tb: TextureBuilder, x: Long, y: Long) {
@@ -144,7 +144,7 @@ class TestTextureBuilder {
     
     private fun testSetPixel(tb: TextureBuilder, rgba: Int, x: Long, y: Long){
         tb.setPixel(x, y, rgba)
-        assertEquals(UNSAFE.getInt(tb.addressFor(x, y)), rgba)
+        assertEquals(getInt(tb.addressFor(x, y)), rgba)
     }
     
     private fun testBadSetPixel(tb: TextureBuilder, x: Long, y: Long){
@@ -373,7 +373,7 @@ class TestTextureBuilder {
                  copyWidth: Long, copyHeight: Long){
 
         // Do a manual copy to check if the result of the copy() method is equal to the manual result
-        val testCopyAddress = UNSAFE.allocateMemory(4L * copyWidth * copyHeight)
+        val testCopyAddress = malloc(4L * copyWidth * copyHeight)
         val testCopy = TextureBuilder(testCopyAddress, copyWidth, copyHeight)
         for (x in 0 until copyWidth){
             for (y in 0 until copyHeight){
@@ -397,13 +397,13 @@ class TestTextureBuilder {
         }
 
         // Free the memory of the test texture
-        UNSAFE.freeMemory(testCopyAddress)
+        free(testCopyAddress)
     }
 
     fun testBadCopy(source: TextureBuilder, dest: TextureBuilder, sourceX: Long, sourceY: Long,
                     destX: Long, destY: Long, copyWidth: Long, copyHeight: Long){
         try {
-            source.copy(dest)
+            source.copy(dest, sourceX, sourceY, destX, destY, copyWidth, copyHeight)
             throw AssertionError("copy should have thrown an IllegalArgumentException")
         } catch (ex: IllegalArgumentException) {}
     }
@@ -419,10 +419,12 @@ class TestTextureBuilder {
                 testCopy(small, large, 1, 1, 0, 0, 5, 6)
                 testCopy(large, small, 0, 0, 0, 0, 7, 11)
                 testCopy(large, small, 0, 0, 0, 0, 1, 11)
-                testCopy(large, small, 0, 10, 1, 0, 7, 1)
+                testCopy(large, small, 0, 10, 1, 0, 6, 1)
+
+                // TODO Copy to self cases
 
                 // Normal cases
-                testCopy(small, large, 2, 1, 4, 5, 5, 8)
+                testCopy(small, large, 2, 1, 4, 5, 4, 8)
                 testCopy(large, small, 1, 3, 5, 4, 2, 3)
 
                 // Bad edge cases

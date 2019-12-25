@@ -9,7 +9,6 @@ import vulko.util.math.isPowerOf2
 import vulko.util.math.nextPowerOf2
 import java.lang.StrictMath.*
 import java.util.*
-import kotlin.math.log2
 
 class BasicModelBuilder<M>(val name: String, val modelData: M,
                            val vertexChunk: MemoryChunk, val indexChunk: MemoryChunk, val textureStack: VirtualStack) : AutoCloseable {

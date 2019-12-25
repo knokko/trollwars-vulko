@@ -1,6 +1,6 @@
 package vulko.memory
 
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 
 /**
  * Virtual stacks can be used to quickly push data to and pop data from.
@@ -172,7 +172,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushByte(value: Byte){
-        UNSAFE.putByte(push(1), value)
+        putByte(push(1), value)
     }
 
     /**
@@ -182,7 +182,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushShort(value: Short){
-        UNSAFE.putShort(push(2), value)
+        putShort(push(2), value)
     }
 
     /**
@@ -192,7 +192,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushChar(value: Char){
-        UNSAFE.putChar(push(2), value)
+        putChar(push(2), value)
     }
 
     /**
@@ -202,7 +202,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushInt(value: Int){
-        UNSAFE.putInt(push(4), value)
+        putInt(push(4), value)
     }
 
     /**
@@ -212,7 +212,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushFloat(value: Float){
-        UNSAFE.putFloat(push(4), value)
+        putFloat(push(4), value)
     }
 
     /**
@@ -222,7 +222,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushLong(value: Long){
-        UNSAFE.putLong(push(8), value)
+        putLong(push(8), value)
     }
 
     /**
@@ -232,7 +232,7 @@ class VirtualStack(
      * If this push causes this stack to overflow, a VirtualStackOverflow will be thrown.
      */
     fun pushDouble(value: Double){
-        UNSAFE.putDouble(push(8), value)
+        putDouble(push(8), value)
     }
 
     /**
@@ -243,7 +243,7 @@ class VirtualStack(
      * thrown.
      */
     fun popByte() : Byte {
-        return UNSAFE.getByte(pop(1))
+        return getByte(pop(1))
     }
 
     /**
@@ -254,7 +254,7 @@ class VirtualStack(
      * thrown.
      */
     fun popShort() : Short {
-        return UNSAFE.getShort(pop(2))
+        return getShort(pop(2))
     }
 
     /**
@@ -265,7 +265,7 @@ class VirtualStack(
      * thrown.
      */
     fun popChar() : Char {
-        return UNSAFE.getChar(pop(2))
+        return getChar(pop(2))
     }
 
     /**
@@ -276,7 +276,7 @@ class VirtualStack(
      * thrown.
      */
     fun popInt() : Int {
-        return UNSAFE.getInt(pop(4))
+        return getInt(pop(4))
     }
 
     /**
@@ -287,7 +287,7 @@ class VirtualStack(
      * thrown.
      */
     fun popFloat() : Float {
-        return UNSAFE.getFloat(pop(4))
+        return getFloat(pop(4))
     }
 
     /**
@@ -298,7 +298,7 @@ class VirtualStack(
      * thrown.
      */
     fun popLong() : Long {
-        return UNSAFE.getLong(pop(8))
+        return getLong(pop(8))
     }
 
     /**
@@ -309,7 +309,7 @@ class VirtualStack(
      * thrown.
      */
     fun popDouble() : Double {
-        return UNSAFE.getDouble(pop(8))
+        return getDouble(pop(8))
     }
 }
 

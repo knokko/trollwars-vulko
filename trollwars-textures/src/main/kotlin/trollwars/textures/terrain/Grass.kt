@@ -1,7 +1,7 @@
 package trollwars.textures.terrain
 
 import vulko.memory.VirtualStack
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 import vulko.textures.TextureBuilder
 import java.lang.StrictMath.*
 import java.util.Random
@@ -29,7 +29,7 @@ fun drawGrass(stack: VirtualStack, texture: TextureBuilder, baseColor: Int, brig
 
     val area = drawWidth.toLong() * drawHeight.toLong()
     val heightTableAddress = stack.push(area)
-    UNSAFE.setMemory(heightTableAddress, area * 2, 0)
+    fill(heightTableAddress, area * 2, 0)
 
     val numGrassLines = (area / 70 / (scale * scale)).toInt()
     for (counter in 0 until numGrassLines){
@@ -113,8 +113,8 @@ fun drawGrass(stack: VirtualStack, texture: TextureBuilder, baseColor: Int, brig
                         // Finally test if we are not 'below' some other grass 'line'
                         val realHeight = (cosVertAngleTimesLength * progress).toShort()
                         val currentHeightAddress = heightTableAddress + 2 * (heightTableX + drawWidth * (realY - minY))
-                        if (realHeight >= UNSAFE.getShort(currentHeightAddress)){
-                            UNSAFE.putShort(currentHeightAddress, realHeight)
+                        if (realHeight >= getShort(currentHeightAddress)){
+                            putShort(currentHeightAddress, realHeight)
 
                             val extraColor = sinVertAngle * progress * progress
                             val newRed = (redBase + extraColor * redLeft).toInt()

@@ -1,6 +1,6 @@
 package vulko.models.building
 
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 import vulko.models.buffer.BasicVertexBuffer
 
 private const val VALUES_POSITION = 3
@@ -18,19 +18,19 @@ private const val OFFSET_MATRIX = OFFSET_TEX_COORDS + 4 * VALUES_TEX_COORDS
 class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: Long) : AbstractBuilder(startAddress, boundAddress){
 
     fun add(x: Float, y: Float, z: Float, nx: Float, ny: Float, nz: Float, textureID: Int, u: Int, v: Int, matrix: Float){
-        UNSAFE.putFloat(currentAddress, x)
-        UNSAFE.putFloat(currentAddress + 4, y)
-        UNSAFE.putFloat(currentAddress + 8, z)
+        putFloat(currentAddress, x)
+        putFloat(currentAddress + 4, y)
+        putFloat(currentAddress + 8, z)
 
-        UNSAFE.putFloat(currentAddress + 12, nx)
-        UNSAFE.putFloat(currentAddress + 16, ny)
-        UNSAFE.putFloat(currentAddress + 20, nz)
+        putFloat(currentAddress + 12, nx)
+        putFloat(currentAddress + 16, ny)
+        putFloat(currentAddress + 20, nz)
 
-        UNSAFE.putInt(currentAddress + 24, textureID)
-        UNSAFE.putInt(currentAddress + 28, u)
-        UNSAFE.putInt(currentAddress + 32, v)
+        putInt(currentAddress + 24, textureID)
+        putInt(currentAddress + 28, u)
+        putInt(currentAddress + 32, v)
 
-        UNSAFE.putFloat(currentAddress + 36, matrix)
+        putFloat(currentAddress + 36, matrix)
 
         currentAddress += STEP_SIZE
     }
@@ -53,37 +53,37 @@ class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: 
         val vertexCount = getVertexCountSoFar()
 
         run {
-            val textureID = UNSAFE.getInt(readAddress)
+            val textureID = getInt(readAddress)
             val textureEntry = textureList[textureID]
-            val absoluteU = UNSAFE.getInt(readAddress + 4) + textureEntry.offsetX!!
-            val absoluteV = UNSAFE.getInt(readAddress + 8) + textureEntry.offsetY!!
+            val absoluteU = getInt(readAddress + 4) + textureEntry.offsetX!!
+            val absoluteV = getInt(readAddress + 8) + textureEntry.offsetY!!
             readAddress += 12
 
-            UNSAFE.putFloat(writeAddress, absoluteU.toFloat() / floatWidth)
-            UNSAFE.putFloat(writeAddress + 4, absoluteV.toFloat() / floatHeight)
+            putFloat(writeAddress, absoluteU.toFloat() / floatWidth)
+            putFloat(writeAddress + 4, absoluteV.toFloat() / floatHeight)
             writeAddress += 8
         }
 
         val copySize = 4L * (VALUES_MATRIX + VALUES_POSITION + VALUES_NORMALS)
 
         for (currentVertex in 1 until vertexCount){
-            UNSAFE.copyMemory(readAddress, writeAddress, copySize)
+            copy(readAddress, writeAddress, copySize)
             readAddress += copySize
             writeAddress += copySize
 
-            val textureID = UNSAFE.getInt(readAddress)
+            val textureID = getInt(readAddress)
             val textureEntry = textureList[textureID]
-            val absoluteU = UNSAFE.getInt(readAddress + 4) + textureEntry.offsetX!!
-            val absoluteV = UNSAFE.getInt(readAddress + 8) + textureEntry.offsetY!!
+            val absoluteU = getInt(readAddress + 4) + textureEntry.offsetX!!
+            val absoluteV = getInt(readAddress + 8) + textureEntry.offsetY!!
             readAddress += 12
 
-            UNSAFE.putFloat(writeAddress, absoluteU.toFloat() / floatWidth)
-            UNSAFE.putFloat(writeAddress + 4, absoluteV.toFloat() / floatHeight)
+            putFloat(writeAddress, absoluteU.toFloat() / floatWidth)
+            putFloat(writeAddress + 4, absoluteV.toFloat() / floatHeight)
             writeAddress += 8
         }
 
         // The final matrix index
-        UNSAFE.putFloat(writeAddress, UNSAFE.getFloat(readAddress))
+        putFloat(writeAddress, getFloat(readAddress))
 
         // Prevent any further add calls by making sure they will cause JVM crash
         currentAddress = 0
@@ -94,7 +94,7 @@ class BasicVertexBuilder internal constructor(startAddress: Long, boundAddress: 
 
 fun createBasicVertexBuffer(vertexCount: Int) : BasicVertexBuilder {
     val byteSize = (vertexCount * STEP_SIZE).toLong()
-    val address = UNSAFE.allocateMemory(byteSize)
+    val address = malloc(byteSize)
     val bound = address + byteSize
     return BasicVertexBuilder(address, bound)
 }

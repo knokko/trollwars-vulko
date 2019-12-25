@@ -1,6 +1,6 @@
 package vulko.models.building
 
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 import org.lwjgl.system.MemoryUtil.memByteBuffer
 import java.nio.ByteBuffer
 
@@ -36,7 +36,7 @@ abstract class AbstractBuilder protected constructor(val startAddress: Long, val
 
         // Don't free the memory twice
         if (currentAddress != 0L) {
-            UNSAFE.freeMemory(startAddress)
+            free(startAddress)
             checkBounds()
 
             // Make sure we throw an error if an attempt is made to use this buffer after it has been freed

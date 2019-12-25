@@ -236,9 +236,9 @@ class TextureBuilder(val address: Long, val width: Long, val height: Long) {
         dest.checkMinLengthBoundsY(destY, copyHeight, "destY", "copyHeight", "dest.height")
 
         val byteCopyWidth = copyWidth * 4L
-        for (ownY in 0 until copyHeight){
-            val srcAddress = addressFor(0L, ownY)
-            val destAddress = dest.addressFor(destX, ownY + destY)
+        for (offsetY in 0 until copyHeight){
+            val srcAddress = addressFor(sourceX, sourceY + offsetY)
+            val destAddress = dest.addressFor(destX, destY + offsetY)
             copy(srcAddress, destAddress, byteCopyWidth)
         }
     }

@@ -1,6 +1,6 @@
 package vulko.memory
 
-import vulko.memory.util.UNSAFE
+import vulko.memory.util.*
 import java.lang.UnsupportedOperationException
 import java.util.*
 import kotlin.IllegalStateException
@@ -17,7 +17,10 @@ import kotlin.IllegalStateException
  * Each memory claim requires a description (as String). The summarizeClaims() method prints an overview of the
  * currently claimed memory blocks along with their description.
  */
-class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true, private val parent: MemorySplitter? = null, val address: Long = UNSAFE.allocateMemory(capacity)) : AutoCloseable, MemorySplitter {
+class MemoryManager
+
+@Throws(MallocException::class)
+constructor(val capacity: Long, val allowExternalMemory: Boolean = true, private val parent: MemorySplitter? = null, val address: Long = malloc(capacity)) : AutoCloseable, MemorySplitter {
 
     private val claimsTree = TreeSet<ClaimEntry>()
 
@@ -36,16 +39,17 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
         addressFragmentsTree.add(initialFragment)
     }
 
+    @Throws(MallocException::class)
     private fun claim(capacityToClaim: Long, purpose: String) : Long {
         synchronized(this) {
             val fakeFragment = MemoryFragment(-1, capacityToClaim)
             val fragment = sizeFragmentsTree.ceiling(fakeFragment)
             if (fragment == null) {
 
-                // Oh ooh, no fragment is big enough!
+                // Uh ooh, no fragment is big enough!
                 if (allowExternalMemory) {
                     println("Went outside of manager memory to allocate $capacity bytes for $purpose")
-                    return UNSAFE.allocateMemory(capacity)
+                    return malloc(capacity)
                 } else {
                     throw UnsupportedOperationException("Can't allocate $capacity bytes of memory for $purpose")
                 }
@@ -82,6 +86,7 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
      * If the allowExternalMemory of this manager is false and no contiguous memory of at least the requested capacity
      * is available, an UnsupportedOperationException will be thrown.
      */
+    @Throws(MallocException::class)
     fun claimChunk(capacity: Long, purpose: String) : MemoryChunk {
         return MemoryChunk(this, claim(capacity, purpose), capacity)
     }
@@ -93,6 +98,7 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
      * If the allowExternalMemory of this manager is false and no contiguous memory of at least the requested capacity
      * is available, an UnsupportedOperationException will be thrown.
      */
+    @Throws(MallocException::class)
     fun claimStack(capacity: Long, purpose: String) : VirtualStack {
         return VirtualStack(this, claim(capacity, purpose), capacity)
     }
@@ -106,6 +112,7 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
      * If the allowExternalMemory of this manager is false and no contiguous memory of at least the requested capacity
      * is available, an UnsupportedOperationException will be thrown.
      */
+    @Throws(MallocException::class)
     fun claimSubManager(capacity: Long, purpose: String) : MemoryManager {
         return MemoryManager(capacity, allowExternalMemory, this, claim(capacity, purpose))
     }
@@ -204,7 +211,7 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
             if (allowExternalMemory){
 
                 // Now we simply deallocate the memory we allocated before
-                UNSAFE.freeMemory(childAddress)
+                free(childAddress)
             } else {
 
                 // Since allowExternalMemory is false, we could not have allocated this piece of memory outside our
@@ -239,7 +246,7 @@ class MemoryManager(val capacity: Long, val allowExternalMemory: Boolean = true,
                 throw IllegalStateException("Address of memory fragment should be $address, but is ${addressFragmentsTree.first().address}")
             }
             if (parent == null) {
-                UNSAFE.freeMemory(address)
+                free(address)
             } else {
                 parent.freeChild(address)
             }
