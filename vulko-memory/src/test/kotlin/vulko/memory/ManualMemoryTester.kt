@@ -1,4 +1,4 @@
-package vulko.test.memory
+package vulko.memory
 
 import vulko.memory.MemoryManager
 import vulko.memory.VirtualStack
