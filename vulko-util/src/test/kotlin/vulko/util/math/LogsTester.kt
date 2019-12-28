@@ -1,4 +1,4 @@
-package vulko.test.util.math
+package vulko.util.math
 
 import io.kotlintest.shouldThrow
 import org.junit.Assert.assertEquals

@@ -1,4 +1,4 @@
-package vulko.test.util.math
+package vulko.util.math
 
 import org.junit.Assert.assertEquals
 import org.junit.Test

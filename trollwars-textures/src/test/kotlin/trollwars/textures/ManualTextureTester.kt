@@ -1,4 +1,4 @@
-package trollwars.test.textures
+package trollwars.textures
 
 import trollwars.textures.creatures.createSnake1Properties
 import trollwars.textures.terrain.drawGrass
@@ -27,8 +27,8 @@ fun mainNew(){
 }
 
 fun main(){
-    MemoryManager(6 * (width * height + smallWidth * smallHeight)).use{manager ->
-        manager.claimStack(6 * (width * height + smallWidth * smallHeight), "small texture test").use {stack ->
+    MemoryManager(6 * (width * height + smallWidth * smallHeight)).use{ manager ->
+        manager.claimStack(6 * (width * height + smallWidth * smallHeight), "small texture test").use { stack ->
             val textureAddress = stack.push(4 * width * height)
             val tb = TextureBuilder(textureAddress, width, height)
 

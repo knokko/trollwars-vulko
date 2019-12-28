@@ -1,4 +1,4 @@
-package vulko.test.textures
+package vulko.textures
 
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertNotEquals
