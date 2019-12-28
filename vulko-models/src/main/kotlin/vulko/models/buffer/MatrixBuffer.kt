@@ -160,14 +160,12 @@ constructor(val address: Long, val numMatrices: Int) {
             throw IllegalArgumentException("Adding numChildMatrices ($numChildMatrices) to" +
                     " startIndex ($startIndex) would cause overflow")
         }
-        if (startIndex + numChildMatrices >= numMatrices){
-            throw IllegalArgumentException("startIndex + numChildMatrices must be smaller than" +
+        if (startIndex + numChildMatrices > numMatrices){
+            throw IllegalArgumentException("startIndex + numChildMatrices must not be greater than " +
                     "numMatrices ($numMatrices), but is ${startIndex + numChildMatrices}")
         }
 
         // Using addressOf will do the implicit bounds checking
         return MatrixBuffer(addressOf(startIndex), numChildMatrices)
     }
-
-    // TODO Write tests
 }
