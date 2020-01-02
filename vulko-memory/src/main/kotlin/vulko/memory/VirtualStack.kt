@@ -3,8 +3,8 @@ package vulko.memory
 import vulko.memory.util.*
 
 /**
+ * A chunk of memory that is to be used like a stack, but allocated on the heap.
  * Virtual stacks can be used to quickly push data to and pop data from.
- * It is called virtual because they are independent from 'the stack' where function parameters are stored.
  *
  * Virtual stacks have a start address, stack pointer and a bound address.
  * Pushing data onto the stack will increase the stack pointer and popping data will decrease it.
@@ -13,7 +13,12 @@ import vulko.memory.util.*
  * When attempting to push data at or after the bound address, a VirtualStackOverflow will be thrown.
  * When attempting to pop data before the start address, a VirtualStackUnderflow will be thrown.
  */
-class VirtualStack(
+class VirtualStack
+
+/**
+ * Creates a new VirtualStack with the given parent with the given startAddress and capacity.
+ */
+constructor(
     /**
      * The owner of the memory this virtual stack borrows. Its freeChild method will be called upon closing this stack.
      */
