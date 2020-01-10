@@ -17,6 +17,8 @@ class VirtualStack
 
 /**
  * Creates a new VirtualStack with the given parent with the given startAddress and capacity.
+ *
+ * If startAddress is 0 or capacity is negative, an IllegalArgumentException will be thrown.
  */
 constructor(
     /**
@@ -33,6 +35,15 @@ constructor(
      * The capacity (maximum size) of this stack, in bytes.
      */
     capacity: Long) : AutoCloseable, MemorySplitter {
+
+    init {
+        if (startAddress == 0L) {
+            throw IllegalArgumentException("startAddress is 0")
+        }
+        if (capacity < 0) {
+            throw IllegalArgumentException("capacity must not be negative, but is $capacity")
+        }
+    }
 
     /**
      * The bound address of this virtual stack. This virtual stack will throw a VirtualStackOverflow if an attempt is
@@ -54,6 +65,14 @@ constructor(
         }
         closed = true
         parent.freeChild(startAddress)
+    }
+
+    /**
+     * Checks if this stack has already been closed.
+     * This method returns true if this stack has been closed and false if not.
+     */
+    fun isClosed() : Boolean {
+        return closed
     }
 
     /**
