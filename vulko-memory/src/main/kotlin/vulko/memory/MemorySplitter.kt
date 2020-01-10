@@ -29,6 +29,20 @@ val SIMPLE_SPLITTER = object : MemorySplitter {
 }
 
 /**
+ * A fake memory splitter useful for unit testing. It doesn't share memory, but only implements
+ * the freeChild method. That implementation does nothing more than setting the value of its
+ * lastFreedAddress to the given childAddress.
+ */
+class TestSplitter : MemorySplitter {
+
+    var lastFreedAddress: Long? = null
+
+    override fun freeChild(childAddress: Long) {
+        lastFreedAddress = childAddress
+    }
+}
+
+/**
  * The 'dummy' MemorySplitter. It does not actually share memory, but only implements the
  * freeChild method of MemorySplitter. That implementation does nothing at all.
  */
