@@ -23,19 +23,49 @@ fun copy(sourceAddress: Long, destAddress: Long, numBytes: Long) {
     memCopy(sourceAddress, destAddress, numBytes)
 }
 
+/**
+ * Tries to allocate a block of memory of numBytes bytes.
+ * If the allocation failed, a MallocException will be thrown.
+ * If numBytes is not 0, this method will not return 0.
+ * If numBytes is 0, the result of this method may or may not be 0.
+ *
+ * The memory address of the first byte of allocated memory will be returned.
+ * That address should later be freed using the free() method.
+ */
 @Throws(MallocException::class)
 fun malloc(numBytes: Long) : Long {
     val address = nmemAlloc(numBytes)
-    if (address == NULL)
+    if (address == NULL && numBytes != 0L)
         throw MallocException(numBytes)
     else
         return address;
 }
 
+/**
+ * Sets all bytes in the memory address range [address, address + numBytes> to value.
+ * This method will not check whether or not the memory is actually owned by the JVM.
+ * If the JVM doesn't own the memory, it could crash.
+ *
+ * If any of the following conditions holds, an IllegalArgumentException will be thrown:
+ *
+ * -numBytes is negative
+ *
+ * -address is 0 and numBytes is not 0
+ */
+@Throws(IllegalArgumentException::class)
 fun fill(address: Long, numBytes: Long, value: Byte) {
+    if (numBytes < 0) {
+        throw IllegalArgumentException("numBytes must not be negative, but is $numBytes")
+    }
+    if (address == 0L && numBytes != 0L) {
+        throw IllegalArgumentException("address must not be 0")
+    }
     memSet(address, value.toInt(), numBytes)
 }
 
+/**
+ * Frees a block of memory that was previously allocated using the malloc method.
+ */
 fun free(address: Long) {
     nmemFree(address)
 }
