@@ -15,10 +15,13 @@ class TestMemoryChunk {
     }
 
     private fun testGoodConstructor(address: Long, size: Long) {
-        val chunk = MemoryChunk(DUMMY_SPLITTER, address, size)
+        val splitter = TestSplitter()
+        val chunk = MemoryChunk(splitter, address, size)
         assertEquals(address, chunk.address)
         assertEquals(size, chunk.size)
+        assertEquals(null, splitter.lastFreedAddress)
         chunk.close()
+        assertEquals(address, splitter.lastFreedAddress)
     }
 
     private fun testBadConstructor(address: Long, size: Long){
@@ -54,18 +57,14 @@ class TestMemoryChunk {
 
     @Test
     fun testClose(){
-        val didClose = booleanArrayOf(false)
-        val chunk = MemoryChunk(object: MemorySplitter {
-
-            override fun freeChild(childAddress: Long) {
-                didClose[0] = true
-            }
-        },1, 1)
+        val splitter = TestSplitter()
+        val chunk = MemoryChunk(splitter,1, 1)
+        assertEquals(null, splitter.lastFreedAddress)
         chunk.close()
-        assertTrue(didClose[0])
-        didClose[0] = false
+        assertEquals(1L as Long?, splitter.lastFreedAddress)
+        splitter.lastFreedAddress = 4L
         chunk.close()
-        assertFalse(didClose[0])
+        assertEquals(4L as Long?, splitter.lastFreedAddress)
     }
 
     @Test
