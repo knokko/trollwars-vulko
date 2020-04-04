@@ -187,8 +187,36 @@ class VulkoLogicalDevice(
             val pImages = memAllocLong(pImageCount[0])
             assertSuccess(vkGetSwapchainImagesKHR(vulkanDevice, swapchainHandle, pImageCount, pImages))
 
-            val swapchain = VulkoSwapchain(this, swapchainHandle, pImages, imageWidth, imageHeight,
-                chosenPresentMode, chosenSurfaceFormat)
+            val pImageViews = memAllocLong(pImageCount[0])
+            for (index in 0 until pImageCount[0]) {
+                stackPush().use {innerStack ->
+                    val imageViewCI = VkImageViewCreateInfo.callocStack(innerStack)
+
+                    imageViewCI.sType(VK_STRUCTURE_TYPE_IMAGE_VIEW_CREATE_INFO)
+                    imageViewCI.image(pImageViews[index])
+                    imageViewCI.viewType(VK_IMAGE_VIEW_TYPE_2D)
+                    imageViewCI.format(chosenSurfaceFormat.format())
+
+                    imageViewCI.components(VkComponentMapping.callocStack(innerStack).set(
+                            VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY,
+                            VK_COMPONENT_SWIZZLE_IDENTITY, VK_COMPONENT_SWIZZLE_IDENTITY
+                    ))
+
+                    imageViewCI.subresourceRange(VkImageSubresourceRange.callocStack(innerStack).set(
+                            VK_IMAGE_ASPECT_COLOR_BIT,
+                            0, 1,
+                            0, 1
+                    ))
+
+                    pImageViews.position(index)
+                    assertSuccess(vkCreateImageView(vulkanDevice, imageViewCI, null, pImageViews))
+                }
+            }
+
+            pImageViews.position(0)
+
+            val swapchain = VulkoSwapchain(this, swapchainHandle, pImages, pImageViews,
+                    imageWidth, imageHeight, chosenPresentMode, chosenSurfaceFormat)
             swapchains.add(swapchain)
             swapchain
         }
