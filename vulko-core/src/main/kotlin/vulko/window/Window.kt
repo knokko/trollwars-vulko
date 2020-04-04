@@ -194,6 +194,23 @@ class VulkoWindow internal constructor(
 
             createInfo.ppEnabledLayerNames(requiredLayersBuffer)
 
+            val supportedLayerCount = stack.mallocInt(1)
+            assertSuccess(VK10.vkEnumerateInstanceLayerProperties(supportedLayerCount, null))
+
+            val supportedLayers = VkLayerProperties.callocStack(supportedLayerCount[0], stack)
+            assertSuccess(
+                    VK10.vkEnumerateInstanceLayerProperties(
+                            supportedLayerCount,
+                            supportedLayers
+                    )
+            )
+
+            println("Supported layers are:")
+            for (layer in supportedLayers) {
+                println(layer.layerNameString())
+            }
+            println("")
+
             val pInstance = stack.mallocPointer(1)
             assertSuccess(VK10.vkCreateInstance(createInfo, null, pInstance))
             VkInstance(pInstance[0], createInfo)
