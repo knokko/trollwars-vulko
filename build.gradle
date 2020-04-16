@@ -47,7 +47,10 @@ project(':vulko-memory') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     }
 }
@@ -61,7 +64,10 @@ project(':vulko-textures') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     }
 }
@@ -76,7 +82,10 @@ project(':vulko-models') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     }
 }
@@ -89,10 +98,16 @@ project(':vulko-core') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows-x86"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm64"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-macos"
@@ -120,7 +135,10 @@ project(':trollwars-models') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     }
 }
@@ -140,12 +158,21 @@ project(':model-viewer') {
         compile "org.joml:joml:$jomlVersion"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows-x86"
         compile "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-windows"
+        compile "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-windows-x86"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm64"
         compile "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-linux"
+        compile "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-linux-arm32"
+        compile "org.lwjgl:lwjgl-opengl:$lwjglVersion:natives-linux-arm64"
 
         compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
         compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-macos"
@@ -174,10 +201,16 @@ dependencies {
     compile "org.joml:joml:$jomlVersion"
 
     compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows"
+    compile "org.lwjgl:lwjgl:$lwjglVersion:natives-windows-x86"
     compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows"
+    compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-windows-x86"
 
     compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux"
+    compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm32"
+    compile "org.lwjgl:lwjgl:$lwjglVersion:natives-linux-arm64"
     compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux"
+    compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm32"
+    compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-linux-arm64"
 
     compile "org.lwjgl:lwjgl:$lwjglVersion:natives-macos"
     compile "org.lwjgl:lwjgl-glfw:$lwjglVersion:natives-macos"
